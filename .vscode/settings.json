@@ -1,0 +1,25 @@
+{
+    "C_Cpp.intelliSenseEngine": "default",
+    "idf.espIdfPathWin": "D:\\esp32-idf\\v5.2.3\\esp-idf",
+    "idf.toolsPathWin": "D:\\esp32-idf\\idf-tools",
+    "idf.pythonInstallPath": "D:\\esp32-idf\\idf-tools\\tools\\idf-python\\3.11.2\\python.exe",
+    "files.associations": {
+        "esp_lcd_ili9341.h": "c",
+        "esp_lcd_touch_stmpe610.h": "c",
+        "ft6x36.h": "c",
+        "i2c_master.h": "c",
+        "i2c.h": "c",
+        "esp_lcd_touch_ft5x06.h": "c",
+        "regex": "c",
+        "lv_demo_music_list.h": "c",
+        "lvgl.h": "c"
+    },
+    "idf.portWin": "COM12",
+    "idf.customExtraVars": {
+        "IDF_TARGET": "esp32s3"
+    },
+    "idf.openOcdConfigs": [
+        "board/esp32s3-builtin.cfg"
+    ],
+    "idf.flashType": "UART"
+}
