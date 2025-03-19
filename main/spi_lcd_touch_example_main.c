@@ -27,6 +27,10 @@
 #include "lwip/apps/sntp.h"
 #include "nvs_flash.h"
 #include "esp_event.h"
+#include "cJSON.h"
+//#include "bsp_wifi_station.h"
+#include "esp_http_client.h"
+#include "esp_crt_bundle.h"
 
 #if CONFIG_EXAMPLE_LCD_CONTROLLER_ILI9341
 #include "esp_lcd_st7796.h"
@@ -239,6 +243,58 @@ void example_lvgl_unlock(void)
 }
 
 
+static const char *TAG_http = "http";
+void http_test_task(void *pvParameters) {
+    char output_buffer[2048]={0};//缓冲区
+    int content_length=0;//协议头长度
+
+    esp_http_client_config_t config;
+    memset(&config,0,sizeof(config));//定义、初始化结构体
+
+    static const char* URL = "https://api.seniverse.com/v3/weather/now.json?key=SaBQu8ubUrQ-6YEOv&location=guilin&language=en&unit=c";
+    config.url=URL;
+    config.crt_bundle_attach=esp_crt_bundle_attach;
+    //config.crt_bundle_attach = esp_crt_bundle_attach; // 使用证书包验证服务器
+
+    esp_http_client_handle_t client =esp_http_client_init(&config);//初始化http
+
+    esp_http_client_set_method(client,HTTP_METHOD_GET);
+    while(1){
+        ESP_ERROR_CHECK(esp_http_client_open(client,0));
+       /* if(err!=ESP_OK){
+            printf("open error");
+
+        }*/
+       content_length = esp_http_client_fetch_headers(client);
+
+       if(content_length < 0){
+        ESP_LOGE(TAG_http,"recive error");
+       }
+    else{
+        int data_read = esp_http_client_read_response(client,output_buffer,2048);
+        if(data_read > 0){
+            ESP_LOGE(TAG_http,"HTTP GET STATUS : %d , content_length = %d",(int)esp_http_client_get_status_code(client),(int)esp_http_client_get_content_length(client));
+            printf("DATA:%s\n",output_buffer);
+
+            cJSON * root_data = NULL;
+            root_data = cJSON_Parse(output_buffer);
+
+            cJSON* cjson_item =cJSON_GetObjectItem(root_data,"results");
+            cJSON* cjson_results =  cJSON_GetArrayItem(cjson_item,0);
+            cJSON* cjson_now = cJSON_GetObjectItem(cjson_results,"now");
+            cJSON* cjson_temperature = cJSON_GetObjectItem(cjson_now,"temperature");
+            
+            printf("%d\n",cjson_temperature->type);
+            printf("%s\n",cjson_temperature->valuestring);
+            cJSON_Delete(root_data);
+        }
+    }
+    
+    esp_http_client_close(client);
+    vTaskDelay(6000/portTICK_PERIOD_MS);
+
+    }
+}
 //extern lv_obj_t * base_1_2;
 static void example_lvgl_port_task(void *arg)
 {
@@ -275,6 +331,7 @@ static void wifi_event_handler(void* arg, esp_event_base_t event_base, int32_t e
         ip_event_got_ip_t* event = (ip_event_got_ip_t*) event_data;
         ESP_LOGI(TAG, "Got IP: " IPSTR, IP2STR(&event->ip_info.ip));
         //lv_img_set_src(img_wifi,&wifi_on);
+        xTaskCreate(&http_test_task, "http_test_task", 8192, NULL, 5, NULL);
     }
 }
 
@@ -345,7 +402,11 @@ void vTask_lvgl_app(void *pvParameters) {
         lv_label_set_text_fmt(label_date, "日期 : %d 年 %d 月 %d 日",timeinfo.tm_year+1900,timeinfo.tm_mon,timeinfo.tm_mday);//动态显示
         vTaskDelay(pdMS_TO_TICKS(1000));
     }
+
 }
+
+
+
 
 void app_main(void)
 {
@@ -524,6 +585,8 @@ void app_main(void)
         2,                   // 任务优先级
         &xTaskHandle_lvgl_app         // 任务句柄
     );
+
+    
 /************************************************** */
         example_lvgl_unlock();
     }

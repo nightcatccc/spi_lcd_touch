@@ -65,6 +65,7 @@ $<TARGET_FILE:__idf_usb>
 $<TARGET_FILE:__idf_wifi_provisioning>
 $<TARGET_FILE:__idf_lvgl__lvgl>
 $<TARGET_FILE:__idf_lv_app>
+$<TARGET_FILE:__idf_cJSON>
 $<TARGET_FILE:__idf_espressif__esp_lcd_gc9a01>
 $<TARGET_FILE:__idf_espressif__esp_lcd_ili9341>
 $<TARGET_FILE:__idf_espressif__esp_lcd_st7796>
