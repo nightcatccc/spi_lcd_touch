@@ -260,38 +260,40 @@ void http_test_task(void *pvParameters) {
 
     esp_http_client_set_method(client,HTTP_METHOD_GET);
     while(1){
-        ESP_ERROR_CHECK(esp_http_client_open(client,0));
-       /* if(err!=ESP_OK){
+        esp_err_t err =esp_http_client_open(client,0);
+       if(err!=ESP_OK){
             printf("open error");
 
-        }*/
-       content_length = esp_http_client_fetch_headers(client);
-
-       if(content_length < 0){
-        ESP_LOGE(TAG_http,"recive error");
-       }
-    else{
-        int data_read = esp_http_client_read_response(client,output_buffer,2048);
-        if(data_read > 0){
-            ESP_LOGE(TAG_http,"HTTP GET STATUS : %d , content_length = %d",(int)esp_http_client_get_status_code(client),(int)esp_http_client_get_content_length(client));
-            printf("DATA:%s\n",output_buffer);
-
-            cJSON * root_data = NULL;
-            root_data = cJSON_Parse(output_buffer);
-
-            cJSON* cjson_item =cJSON_GetObjectItem(root_data,"results");
-            cJSON* cjson_results =  cJSON_GetArrayItem(cjson_item,0);
-            cJSON* cjson_now = cJSON_GetObjectItem(cjson_results,"now");
-            cJSON* cjson_temperature = cJSON_GetObjectItem(cjson_now,"temperature");
-            
-            printf("%d\n",cjson_temperature->type);
-            printf("%s\n",cjson_temperature->valuestring);
-            cJSON_Delete(root_data);
         }
-    }
+        else{
+        content_length = esp_http_client_fetch_headers(client);
+
+        if(content_length < 0){
+            ESP_LOGE(TAG_http,"recive error");
+        }
+        else{
+            int data_read = esp_http_client_read_response(client,output_buffer,2048);
+            if(data_read > 0){
+                ESP_LOGE(TAG_http,"HTTP GET STATUS : %d , content_length = %d",(int)esp_http_client_get_status_code(client),(int)esp_http_client_get_content_length(client));
+                printf("DATA:%s\n",output_buffer);
+
+                cJSON * root_data = NULL;
+                root_data = cJSON_Parse(output_buffer);
+
+                cJSON* cjson_item =cJSON_GetObjectItem(root_data,"results");
+                cJSON* cjson_results =  cJSON_GetArrayItem(cjson_item,0);
+                cJSON* cjson_now = cJSON_GetObjectItem(cjson_results,"now");
+                cJSON* cjson_temperature = cJSON_GetObjectItem(cjson_now,"temperature");
+                
+                printf("%d\n",cjson_temperature->type);
+                printf("%s\n",cjson_temperature->valuestring);
+                cJSON_Delete(root_data);
+                }
+            }
+        }
+        esp_http_client_close(client);
+        vTaskDelay(6000/portTICK_PERIOD_MS);
     
-    esp_http_client_close(client);
-    vTaskDelay(6000/portTICK_PERIOD_MS);
 
     }
 }
