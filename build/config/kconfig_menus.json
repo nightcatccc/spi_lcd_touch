@@ -25934,7 +25934,10 @@
                         "help": "eFuse block key ID storing the HMAC key for deriving the NVS encryption keys\n\nNote: The eFuse block key ID required by the HMAC scheme\n(CONFIG_NVS_SEC_KEY_PROTECT_USING_HMAC) is set using this config when the default\nNVS partition is initialized with nvs_flash_init(). The eFuse block key ID can\nalso be set at runtime by passing the appropriate value to the NVS security scheme\nregistration APIs.",
                         "id": "NVS_SEC_HMAC_EFUSE_KEY_ID",
                         "name": "NVS_SEC_HMAC_EFUSE_KEY_ID",
-                        "range": null,
+                        "range": [
+                            0,
+                            6
+                        ],
                         "title": "eFuse key ID storing the HMAC key",
                         "type": "int"
                     }

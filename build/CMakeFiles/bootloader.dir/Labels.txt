@@ -1,13 +1,13 @@
 # Target labels
  bootloader
 # Source files and their labels
-D:/esp32-idf/esp-pro/MY_PRO/LCD/spi_lcd_touch/build/CMakeFiles/bootloader
-D:/esp32-idf/esp-pro/MY_PRO/LCD/spi_lcd_touch/build/CMakeFiles/bootloader.rule
-D:/esp32-idf/esp-pro/MY_PRO/LCD/spi_lcd_touch/build/CMakeFiles/bootloader-complete.rule
-D:/esp32-idf/esp-pro/MY_PRO/LCD/spi_lcd_touch/build/bootloader-prefix/src/bootloader-stamp/bootloader-build.rule
-D:/esp32-idf/esp-pro/MY_PRO/LCD/spi_lcd_touch/build/bootloader-prefix/src/bootloader-stamp/bootloader-configure.rule
-D:/esp32-idf/esp-pro/MY_PRO/LCD/spi_lcd_touch/build/bootloader-prefix/src/bootloader-stamp/bootloader-download.rule
-D:/esp32-idf/esp-pro/MY_PRO/LCD/spi_lcd_touch/build/bootloader-prefix/src/bootloader-stamp/bootloader-install.rule
-D:/esp32-idf/esp-pro/MY_PRO/LCD/spi_lcd_touch/build/bootloader-prefix/src/bootloader-stamp/bootloader-mkdir.rule
-D:/esp32-idf/esp-pro/MY_PRO/LCD/spi_lcd_touch/build/bootloader-prefix/src/bootloader-stamp/bootloader-patch.rule
-D:/esp32-idf/esp-pro/MY_PRO/LCD/spi_lcd_touch/build/bootloader-prefix/src/bootloader-stamp/bootloader-update.rule
+D:/esp32-idf/esp-pro/MY_PRO/LCD/spi_lcd_touch(success)/build/CMakeFiles/bootloader
+D:/esp32-idf/esp-pro/MY_PRO/LCD/spi_lcd_touch(success)/build/CMakeFiles/bootloader.rule
+D:/esp32-idf/esp-pro/MY_PRO/LCD/spi_lcd_touch(success)/build/CMakeFiles/bootloader-complete.rule
+D:/esp32-idf/esp-pro/MY_PRO/LCD/spi_lcd_touch(success)/build/bootloader-prefix/src/bootloader-stamp/bootloader-build.rule
+D:/esp32-idf/esp-pro/MY_PRO/LCD/spi_lcd_touch(success)/build/bootloader-prefix/src/bootloader-stamp/bootloader-configure.rule
+D:/esp32-idf/esp-pro/MY_PRO/LCD/spi_lcd_touch(success)/build/bootloader-prefix/src/bootloader-stamp/bootloader-download.rule
+D:/esp32-idf/esp-pro/MY_PRO/LCD/spi_lcd_touch(success)/build/bootloader-prefix/src/bootloader-stamp/bootloader-install.rule
+D:/esp32-idf/esp-pro/MY_PRO/LCD/spi_lcd_touch(success)/build/bootloader-prefix/src/bootloader-stamp/bootloader-mkdir.rule
+D:/esp32-idf/esp-pro/MY_PRO/LCD/spi_lcd_touch(success)/build/bootloader-prefix/src/bootloader-stamp/bootloader-patch.rule
+D:/esp32-idf/esp-pro/MY_PRO/LCD/spi_lcd_touch(success)/build/bootloader-prefix/src/bootloader-stamp/bootloader-update.rule

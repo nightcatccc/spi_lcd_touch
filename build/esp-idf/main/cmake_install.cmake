@@ -1,4 +1,4 @@
-# Install script for directory: D:/esp32-idf/esp-pro/MY_PRO/LCD/spi_lcd_touch/main
+# Install script for directory: D:/esp32-idf/esp-pro/MY_PRO/LCD/spi_lcd_touch(success)/main
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

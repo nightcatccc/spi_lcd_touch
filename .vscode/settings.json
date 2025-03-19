@@ -12,7 +12,21 @@
         "esp_lcd_touch_ft5x06.h": "c",
         "regex": "c",
         "lv_demo_music_list.h": "c",
-        "lvgl.h": "c"
+        "lvgl.h": "c",
+        "freertos.h": "c",
+        "lv_demos.h": "c",
+        "lv_app.h": "c",
+        "semphr.h": "c",
+        "esp_err.h": "c",
+        "esp_lcd_st7796.h": "c",
+        "bitset": "c",
+        "algorithm": "c",
+        "format": "c",
+        "stdlib.h": "c",
+        "sntp.h": "c",
+        "time.h": "c",
+        "esp_lcd_panel_io.h": "c",
+        "esp_lcd_panel_ops.h": "c"
     },
     "idf.portWin": "COM12",
     "idf.customExtraVars": {

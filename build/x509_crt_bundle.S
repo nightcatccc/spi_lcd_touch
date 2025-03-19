@@ -1,4 +1,4 @@
-/* * Data converted from D:/esp32-idf/esp-pro/MY_PRO/LCD/spi_lcd_touch/build/esp-idf/mbedtls/x509_crt_bundle
+/* * Data converted from D:/esp32-idf/esp-pro/MY_PRO/LCD/spi_lcd_touch(success)/build/esp-idf/mbedtls/x509_crt_bundle
  */
 .data
 .section .rodata.embedded

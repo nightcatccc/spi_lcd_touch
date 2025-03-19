@@ -1,4 +1,4 @@
-# Install script for directory: D:/esp32-idf/esp-pro/MY_PRO/LCD/spi_lcd_touch
+# Install script for directory: D:/esp32-idf/esp-pro/MY_PRO/LCD/spi_lcd_touch(success)
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -39,7 +39,7 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
-  include("D:/esp32-idf/esp-pro/MY_PRO/LCD/spi_lcd_touch/build/esp-idf/cmake_install.cmake")
+  include("D:/esp32-idf/esp-pro/MY_PRO/LCD/spi_lcd_touch(success)/build/esp-idf/cmake_install.cmake")
 endif()
 
 if(CMAKE_INSTALL_COMPONENT)
@@ -50,5 +50,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "D:/esp32-idf/esp-pro/MY_PRO/LCD/spi_lcd_touch/build/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "D:/esp32-idf/esp-pro/MY_PRO/LCD/spi_lcd_touch(success)/build/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")

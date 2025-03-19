@@ -9,7 +9,7 @@
 #include "lv_demo_music.h"
 
 #if LV_USE_DEMO_MUSIC
-
+//#include "lv_qrcode.h" 
 #include "lv_demo_music_main.h"
 #include "lv_demo_music_list.h"
 
@@ -124,7 +124,7 @@ void lv_demo_music(void)
 
     list = _lv_demo_music_list_create(lv_scr_act());
     ctrl = _lv_demo_music_main_create(lv_scr_act());
-
+    
 #if LV_DEMO_MUSIC_AUTO_PLAY
     auto_step_timer = lv_timer_create(auto_step_cb, 1000, NULL);
 #endif

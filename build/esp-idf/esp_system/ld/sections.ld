@@ -1,6 +1,6 @@
 /* Automatically generated file; DO NOT EDIT */
 /* Espressif IoT Development Framework Linker Script */
-/* Generated from: D:\esp32-idf\esp-pro\MY_PRO\LCD\spi_lcd_touch\build\esp-idf\esp_system\ld\sections.ld.in */
+/* Generated from: D:\esp32-idf\esp-pro\MY_PRO\LCD\spi_lcd_touch(success)\build\esp-idf\esp_system\ld\sections.ld.in */
 
 /*
 

@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: CC0-1.0
  */
 
+
 #include <stdio.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -17,9 +18,15 @@
 #include "esp_err.h"
 #include "esp_log.h"
 #include "lvgl.h"
-//#include "lv_lib_qrcode/lv_qrcode.h" 
-//#include "driver/i2c_master.h"
+#include "lv_demos.h"
+#include "time.h"
+#include "stdlib.h"
+#include "esp_wifi.h"
 #include "driver/i2c.h"
+#include "lv_app.h"
+#include "lwip/apps/sntp.h"
+#include "nvs_flash.h"
+#include "esp_event.h"
 
 #if CONFIG_EXAMPLE_LCD_CONTROLLER_ILI9341
 #include "esp_lcd_st7796.h"
@@ -39,7 +46,7 @@ static const char *TAG = "example";
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////// Please update the following configuration according to your LCD spec //////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#define EXAMPLE_LCD_PIXEL_CLOCK_HZ     (20 * 1000 * 1000)
+#define EXAMPLE_LCD_PIXEL_CLOCK_HZ     (80 * 1000 * 1000)
 #define EXAMPLE_LCD_BK_LIGHT_ON_LEVEL  1
 #define EXAMPLE_LCD_BK_LIGHT_OFF_LEVEL !EXAMPLE_LCD_BK_LIGHT_ON_LEVEL
 #define EXAMPLE_PIN_NUM_SCLK           14
@@ -50,7 +57,7 @@ static const char *TAG = "example";
 #define EXAMPLE_PIN_NUM_LCD_CS         18
 #define EXAMPLE_PIN_NUM_BK_LIGHT       13
 //#define EXAMPLE_PIN_NUM_TOUCH_CS       15
-
+    
 #define EXAMPLE_PIN_NUM_TOUCH_SDA 12 // I2C数据引脚
 #define EXAMPLE_PIN_NUM_TOUCH_SCL 8 // I2C时钟引脚
 #define TOUCH_FT6336_RST 9 // 复位引脚（若无则设为-1）
@@ -67,12 +74,15 @@ static const char *TAG = "example";
 // Bit number used to represent command and parameter
 #define EXAMPLE_LCD_CMD_BITS           8
 #define EXAMPLE_LCD_PARAM_BITS         8
-
+                                                                                                                                             
 #define EXAMPLE_LVGL_TICK_PERIOD_MS    2
 #define EXAMPLE_LVGL_TASK_MAX_DELAY_MS 500
 #define EXAMPLE_LVGL_TASK_MIN_DELAY_MS 1
 #define EXAMPLE_LVGL_TASK_STACK_SIZE   (4 * 1024)
 #define EXAMPLE_LVGL_TASK_PRIORITY     2
+
+#define CONFIG_WIFI_SSID "xiaomi13"
+#define CONFIG_WIFI_PASSWORD "cyy123123"
 
 static SemaphoreHandle_t lvgl_mux = NULL;
 
@@ -82,6 +92,42 @@ esp_lcd_touch_handle_t tp = NULL;
 
 extern void example_lvgl_demo_ui(lv_disp_t *disp);
 
+static void esp_initialize_sntp(void)
+{
+    //sntp_setoperatingmode(SNTP_OPMODE_POLL);
+    ESP_LOGI(TAG, "Initializing SNTP");
+    sntp_setservername(0, "ntp1.aliyun.com");
+    
+    
+    sntp_init();
+}
+//extern struct tm timeinfo;
+struct tm esp_wait_sntp_sync(void)
+{
+    char strftime_buf[64];
+    esp_initialize_sntp();
+    struct tm timeinfo = { 0 };
+    // wait for time to be set
+    time_t now = 0;
+
+    int retry = 0;
+
+    while (timeinfo.tm_year < (2019 - 1900)) {
+        ESP_LOGD(TAG, "Waiting for system time to be set... (%d)", ++retry);
+        vTaskDelay(100 / portTICK_PERIOD_MS);
+        time(&now);
+        localtime_r(&now, &timeinfo);
+    }
+
+    // set timezone to China Standard Time
+    setenv("TZ", "CST-8", 1);
+    tzset();
+
+    strftime(strftime_buf, sizeof(strftime_buf), "%c", &timeinfo);
+    ESP_LOGI(TAG, "The current date/time in Shanghai is: %s", strftime_buf);
+    return timeinfo;
+}
+ 
 static bool example_notify_lvgl_flush_ready(esp_lcd_panel_io_handle_t panel_io, esp_lcd_panel_io_event_data_t *edata, void *user_ctx)
 {
     lv_disp_drv_t *disp_driver = (lv_disp_drv_t *)user_ctx;
@@ -108,6 +154,10 @@ static void example_lvgl_port_update_callback(lv_disp_drv_t *drv)
     switch (drv->rotated) {
         case LV_DISP_ROT_NONE:
         // Rotate LCD display
+        //esp_lcd_panel_swap_xy(panel_handle, false);
+        //esp_lcd_panel_mirror(panel_handle, false, true);
+        //esp_lcd_panel_swap_xy(panel_handle, true);
+        //esp_lcd_panel_mirror(panel_handle, true, true);
         esp_lcd_panel_swap_xy(panel_handle, false);
         esp_lcd_panel_mirror(panel_handle, true, false);
 #if CONFIG_EXAMPLE_LCD_TOUCH_ENABLED
@@ -146,6 +196,7 @@ static void example_lvgl_port_update_callback(lv_disp_drv_t *drv)
         esp_lcd_touch_set_mirror_x(tp, false);
 #endif
         break;
+
     }
 }
 
@@ -187,6 +238,8 @@ void example_lvgl_unlock(void)
     xSemaphoreGiveRecursive(lvgl_mux);
 }
 
+
+//extern lv_obj_t * base_1_2;
 static void example_lvgl_port_task(void *arg)
 {
     ESP_LOGI(TAG, "Starting LVGL task");
@@ -207,7 +260,92 @@ static void example_lvgl_port_task(void *arg)
     }
 }
 /****************************************************************************************************************************** */
+static void wifi_event_handler(void* arg, esp_event_base_t event_base, int32_t event_id, void* event_data) {
+    //lv_obj_t * img_wifi=lv_img_create(base_1_2);
+    //lv_obj_set_size(img_wifi,16,16);
+    //lv_obj_set_pos(img_wifi,300,3);
+    if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_START) {
+        esp_wifi_connect();
+        //lv_img_set_src(img_wifi,&wifi_off);
+    } else if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_DISCONNECTED) {
+        esp_wifi_connect();
+        ESP_LOGI(TAG, "Retry connecting to AP...");
+        //lv_img_set_src(img_wifi,&wifi_off);
+    } else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP) {
+        ip_event_got_ip_t* event = (ip_event_got_ip_t*) event_data;
+        ESP_LOGI(TAG, "Got IP: " IPSTR, IP2STR(&event->ip_info.ip));
+        //lv_img_set_src(img_wifi,&wifi_on);
+    }
+}
+
+
+void wifi_init_sta(void) {
+    // 初始化 NVS
+    esp_err_t ret = nvs_flash_init();
+    if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
+        ESP_ERROR_CHECK(nvs_flash_erase());
+        ret = nvs_flash_init();
+    }
+    ESP_ERROR_CHECK(ret);
+
+    // 初始化网络接口和事件循环
+    ESP_ERROR_CHECK(esp_netif_init());//初始化tcpip协议栈
+    ESP_ERROR_CHECK(esp_event_loop_create_default()); //创建一个默认系统事件调度循环，之后可以注册回调函数来处理系统的一些事件
+    esp_netif_create_default_wifi_sta();//使用默认配置创建STA对象
+    
+
+    // 初始化 Wi-Fi
+    wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
+    ESP_ERROR_CHECK(esp_wifi_init(&cfg));
+
+    // 注册事件处理函数
+    ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT, ESP_EVENT_ANY_ID, &wifi_event_handler, NULL, NULL));
+    ESP_ERROR_CHECK(esp_event_handler_instance_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &wifi_event_handler, NULL, NULL));
+
+    // 配置 Wi-Fi
+    wifi_config_t wifi_config = {
+        .sta = {
+            .ssid = "xiaomi13",
+            .password = "cyy123123",
+            .threshold.authmode = WIFI_AUTH_WPA2_PSK,      // 加密方式
+            
+            .pmf_cfg = 
+            {
+                .capable = true,        // 启用保护管理帧
+                .required = false       // 禁止仅与保护管理帧设备通信
+            }
+        },
+    };
+    ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
+    ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA ,&wifi_config));
+    ESP_ERROR_CHECK(esp_wifi_start());
+
+    ESP_LOGI(TAG, "Wi-Fi initialized, connecting to AP...");
+}
 /****************************************************************************************************************************** */
+
+extern lv_obj_t * label_time;
+extern lv_obj_t * label_date;
+
+void vTask_lvgl_app(void *pvParameters) {
+    //char strftime_buf[64];
+    while (1) {
+        struct tm timeinfo=esp_wait_sntp_sync();
+        //strftime(strftime_buf, sizeof(strftime_buf), "%c", &timeinfo);
+        //ESP_LOGI(TAG, "The current date/time in Shanghai is: %s", strftime_buf);
+        if(timeinfo.tm_min>=10&&timeinfo.tm_hour>=10)
+        lv_label_set_text_fmt(label_time, "%d : %d",timeinfo.tm_hour ,timeinfo.tm_min);//动态显示
+        else if(timeinfo.tm_min<10&&timeinfo.tm_hour>=10)
+        lv_label_set_text_fmt(label_time, "%d : 0%d",timeinfo.tm_hour ,timeinfo.tm_min);//动态显示
+        else if(timeinfo.tm_min>=10&&timeinfo.tm_hour<10)
+        lv_label_set_text_fmt(label_time, "0%d : %d",timeinfo.tm_hour ,timeinfo.tm_min);//动态显示
+        else if(timeinfo.tm_min<=10&&timeinfo.tm_hour<10)
+        lv_label_set_text_fmt(label_time, "0%d : 0%d",timeinfo.tm_hour ,timeinfo.tm_min);//动态显示
+        
+        lv_label_set_text_fmt(label_date, "日期 : %d 年 %d 月 %d 日",timeinfo.tm_year+1900,timeinfo.tm_mon,timeinfo.tm_mday);//动态显示
+        vTaskDelay(pdMS_TO_TICKS(1000));
+    }
+}
 
 void app_main(void)
 {
@@ -329,6 +467,7 @@ void app_main(void)
     lv_disp_drv_init(&disp_drv);
     disp_drv.hor_res = EXAMPLE_LCD_H_RES;
     disp_drv.ver_res = EXAMPLE_LCD_V_RES;
+    disp_drv.rotated=LV_DISP_ROT_NONE;
     disp_drv.flush_cb = example_lvgl_flush_cb;
     disp_drv.drv_update_cb = example_lvgl_port_update_callback;
     disp_drv.draw_buf = &disp_buf;
@@ -360,15 +499,32 @@ void app_main(void)
     assert(lvgl_mux);
     ESP_LOGI(TAG, "Create LVGL task");
     xTaskCreate(example_lvgl_port_task, "LVGL", EXAMPLE_LVGL_TASK_STACK_SIZE, NULL, EXAMPLE_LVGL_TASK_PRIORITY, NULL);
-
+    
     ESP_LOGI(TAG, "Display LVGL Meter Widget");
     // Lock the mutex due to the LVGL APIs are not thread-safe
     if (example_lvgl_lock(-1)) {
-        //example_lvgl_demo_ui(disp);
-/************************************************************************************************************************************************* */
-/************************************************************************************************************************************************* */
+ //        example_lvgl_demo_ui(disp);
+ //       lv_demo_music();
+        lv_disp_set_rotation(disp, 1);
 
-        // Release the mutex
+        wifi_init_sta();
+        
+     /*   while(1){
+            esp_wait_sntp_sync();
+            vTaskDelay(100);
+        }*/
+        app_text();
+/******************task_create********************** */
+    TaskHandle_t xTaskHandle_lvgl_app = NULL;
+    BaseType_t xReturn = xTaskCreate(
+        vTask_lvgl_app,        // 任务函数
+        "lvgl_app",       // 任务名称
+        10000,                // 任务栈大小（以字为单位）
+        NULL,                // 传递给任务函数的参数
+        2,                   // 任务优先级
+        &xTaskHandle_lvgl_app         // 任务句柄
+    );
+/************************************************** */
         example_lvgl_unlock();
     }
 }

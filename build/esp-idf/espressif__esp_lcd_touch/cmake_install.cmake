@@ -1,4 +1,4 @@
-# Install script for directory: D:/esp32-idf/esp-pro/MY_PRO/LCD/spi_lcd_touch/managed_components/espressif__esp_lcd_touch
+# Install script for directory: D:/esp32-idf/esp-pro/MY_PRO/LCD/spi_lcd_touch(success)/managed_components/espressif__esp_lcd_touch
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
