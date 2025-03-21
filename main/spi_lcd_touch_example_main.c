@@ -32,6 +32,14 @@
 #include "esp_http_client.h"
 #include "esp_crt_bundle.h"
 
+extern int8_t base_1_flag;//主界面标志位
+extern int8_t slider_flag;//设置按钮标志位
+extern int8_t base_3_flag;//修理人员面板标志位
+extern int8_t base_4_flag;//课表面板标志位
+
+extern int8_t light_flag;//灯光标志位
+extern int8_t kongtiao_flag;//空调标志位位
+extern int8_t touying_flag;//投影仪标志位
 #if CONFIG_EXAMPLE_LCD_CONTROLLER_ILI9341
 #include "esp_lcd_st7796.h"
 #elif CONFIG_EXAMPLE_LCD_CONTROLLER_GC9A01
@@ -99,7 +107,7 @@ extern void example_lvgl_demo_ui(lv_disp_t *disp);
 static void esp_initialize_sntp(void)
 {
     //sntp_setoperatingmode(SNTP_OPMODE_POLL);
-    ESP_LOGI(TAG, "Initializing SNTP");
+    //ESP_LOGI(TAG, "Initializing SNTP");
     sntp_setservername(0, "ntp1.aliyun.com");
     
     
@@ -128,7 +136,7 @@ struct tm esp_wait_sntp_sync(void)
     tzset();
 
     strftime(strftime_buf, sizeof(strftime_buf), "%c", &timeinfo);
-    ESP_LOGI(TAG, "The current date/time in Shanghai is: %s", strftime_buf);
+    //ESP_LOGI(TAG, "The current date/time in Shanghai is: %s", strftime_buf);
     return timeinfo;
 }
  
@@ -242,7 +250,7 @@ void example_lvgl_unlock(void)
     xSemaphoreGiveRecursive(lvgl_mux);
 }
 
-
+extern lv_obj_t * label_base_1_2;
 static const char *TAG_http = "http";
 void http_test_task(void *pvParameters) {
     char output_buffer[2048]={0};//缓冲区
@@ -283,10 +291,11 @@ void http_test_task(void *pvParameters) {
                 cJSON* cjson_item =cJSON_GetObjectItem(root_data,"results");
                 cJSON* cjson_results =  cJSON_GetArrayItem(cjson_item,0);
                 cJSON* cjson_now = cJSON_GetObjectItem(cjson_results,"now");
-                cJSON* cjson_temperature = cJSON_GetObjectItem(cjson_now,"temperature");
+                cJSON* cjson_text = cJSON_GetObjectItem(cjson_now,"text");
                 
-                printf("%d\n",cjson_temperature->type);
-                printf("%s\n",cjson_temperature->valuestring);
+                //printf("%d\n",cjson_text->type);
+                //printf("%s\n",cjson_text->valuestring);
+                lv_label_set_text_fmt(label_base_1_2, "Recent weather : %s", cjson_text->valuestring);
                 cJSON_Delete(root_data);
                 }
             }
@@ -414,6 +423,17 @@ void app_main(void)
 {
     static lv_disp_draw_buf_t disp_buf; // contains internal graphic buffer(s) called draw buffer(s)
     static lv_disp_drv_t disp_drv;      // contains callback functions
+
+    base_1_flag=1;
+    slider_flag=0;
+    base_3_flag=0;
+    base_4_flag=0;
+    
+
+    light_flag=0;
+    kongtiao_flag=0;
+    touying_flag=0;
+
 
     ESP_LOGI(TAG, "Turn off LCD backlight");
     gpio_config_t bk_gpio_config = {

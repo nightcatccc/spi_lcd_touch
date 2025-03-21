@@ -3,6 +3,14 @@
 #include "lwip/apps/sntp.h"
 #include "time.h"
 
+int8_t base_1_flag;//主界面标志位
+int8_t slider_flag;//设置按钮标志位
+int8_t base_3_flag;//修理人员面板标志位
+int8_t base_4_flag;//修理人员面板标志位
+
+int8_t light_flag;//灯光标志位
+int8_t kongtiao_flag;//空调标志位位
+int8_t touying_flag;//投影仪标志位
 
 lv_obj_t * base_1;//创建背景板(主页)
 
@@ -20,10 +28,18 @@ static void imgbtn1_cb(lv_event_t * e)//设置按钮回调函数
     if(code == LV_EVENT_CLICKED) {
         if(count_img_1==false) count_img_1=true;
         else count_img_1=false;
-        if(count_img_1==false)
+        /*if(count_img_1==false)
             lv_img_set_src(img1, &light_off);
         else
+            lv_img_set_src(img1, &light_on);*/
+        if(light_flag==0){
             lv_img_set_src(img1, &light_on);
+            light_flag=1;
+        }
+        else{
+            lv_img_set_src(img1, &light_off);
+            light_flag=0;
+        }
     }
 //    else if(code==LV_EVENT_LONG_PRESSED)
 //    {
@@ -42,10 +58,18 @@ static void imgbtn2_cb(lv_event_t * e)//设置按钮回调函数
         //lv_obj_add_flag(base_1,LV_OBJ_FLAG_HIDDEN);
         if(count_img_2==false) count_img_2=true;
         else count_img_2=false;
-        if(count_img_2==false)
+        /*if(count_img_2==false)
             lv_img_set_src(img2, &kt_off);
         else
+            lv_img_set_src(img2, &kt_on);*/
+        if(kongtiao_flag==0){
             lv_img_set_src(img2, &kt_on);
+            kongtiao_flag=1;
+        }
+        else{
+            lv_img_set_src(img2, &kt_off);
+            kongtiao_flag=0;
+        }
     }
 }
 
@@ -60,10 +84,19 @@ static void imgbtn3_cb(lv_event_t * e)//设置按钮回调函数
         //lv_obj_add_flag(base_1,LV_OBJ_FLAG_HIDDEN);
         if(count_img_3==false) count_img_3=true;
         else count_img_3=false;
-        if(count_img_3==false)
+        /*if(count_img_3==false)
             lv_img_set_src(img3, &bg_off);
         else
             lv_img_set_src(img3, &bg_on);
+            */
+        if(touying_flag==0){
+            lv_img_set_src(img3, &bg_on);
+            touying_flag=1;
+        }
+        else{
+            lv_img_set_src(img3, &bg_off);
+            touying_flag=0;
+        }
     }
 }
 
@@ -76,6 +109,8 @@ static void back_btn_cb(lv_event_t * e)//设置按钮回调函数
     if(code == LV_EVENT_CLICKED) {
         lv_obj_del(slider);
         lv_obj_clear_flag(base_1,LV_OBJ_FLAG_HIDDEN);
+        base_1_flag=1;//界面切换（设置面板->主界面）
+        slider_flag=0;
         //lv_obj_add_flag(slider,LV_OBJ_FLAG_HIDDEN);
         lv_obj_del(btn);
     }
@@ -94,22 +129,40 @@ void setting_act(void)
     lv_obj_set_style_border_width(slider, 0, LV_PART_MAIN); // 去掉边框
     lv_obj_set_scroll_snap_x(slider, LV_SCROLL_SNAP_CENTER); // 设置水平滑动对齐到中心
     lv_obj_set_scroll_dir(slider, LV_DIR_HOR); // 允许水平滑动
-
+    
     // 添加图片（不需要手动设置位置）
     lv_obj_t * img1 = lv_imgbtn_create(slider);
-    lv_img_set_src(img1, &light_off);
+
+    if(light_flag==0)lv_img_set_src(img1, &light_off);
+    else lv_img_set_src(img1, &light_on);
+
     lv_obj_set_size(img1,200,200);
     lv_obj_add_event_cb(img1, imgbtn1_cb, LV_EVENT_ALL, NULL);
 
+
+
+
     lv_obj_t * img2 = lv_imgbtn_create(slider);
-    lv_img_set_src(img2, &kt_off);
+    if(kongtiao_flag==0)lv_img_set_src(img2, &kt_off);
+    else lv_img_set_src(img2, &kt_on);
     lv_obj_set_size(img2,200,200);
     lv_obj_add_event_cb(img2, imgbtn2_cb, LV_EVENT_ALL, NULL);
 
+
+
+
+
     lv_obj_t * img3 = lv_imgbtn_create(slider);
-    lv_img_set_src(img3, &bg_off);
+    if(touying_flag==0)lv_img_set_src(img3, &bg_off);
+    else lv_img_set_src(img3, &bg_on);
     lv_obj_set_size(img3,200,200);
     lv_obj_add_event_cb(img3, imgbtn3_cb, LV_EVENT_ALL, NULL);
+
+
+
+
+
+
 
     lv_obj_t * back_btn=lv_btn_create(lv_scr_act());
     lv_obj_set_size(back_btn,40,30);
@@ -128,6 +181,8 @@ static void imgbtn_event_cb_1(lv_event_t * e)//设置按钮回调函数
         // 处理按钮点击事件
         LV_LOG_USER("Image button clicked!");
         lv_obj_add_flag(base_1,LV_OBJ_FLAG_HIDDEN);
+        base_1_flag=0;//界面切换（主界面->设置面板）
+        slider_flag=1;
         setting_act();
     }
 }
@@ -146,7 +201,7 @@ static void imgbtn_event_cb_people(lv_event_t * e)//头像按钮回调函数
         lv_anim_start(&anim_people);                        // 启动动画
     }
 }
-lv_obj_t * base_3;
+lv_obj_t * base_3;//修理人员界面主板
 
 static void set_label_opa(void * label, int32_t opa) {//信息渐显动画回调函数
     lv_obj_set_style_opa(label, opa, 0);  // 设置 Label 的透明度
@@ -175,7 +230,7 @@ static void anim_ready_cb(lv_anim_t * anim)//动画结束回调函数
     lv_anim_start(&anim_label_people);
 }
 
-static void back_btn_cb_3(lv_event_t * e)//设置按钮回调函数
+static void back_btn_cb_3(lv_event_t * e)//设置界面返回
 {
     lv_event_code_t code = lv_event_get_code(e);
     lv_obj_t * btn = lv_event_get_target(e);
@@ -184,6 +239,8 @@ static void back_btn_cb_3(lv_event_t * e)//设置按钮回调函数
     if(code == LV_EVENT_CLICKED) {
         lv_obj_del(base_3);
         lv_obj_clear_flag(base_1,LV_OBJ_FLAG_HIDDEN);
+        base_1_flag=1;//界面切换（电话面板->主界面）
+        base_3_flag=0;
         //lv_obj_add_flag(slider,LV_OBJ_FLAG_HIDDEN);
         lv_obj_del(btn);
     }
@@ -231,8 +288,127 @@ static void imgbtn_event_cb_2(lv_event_t * e)//电话按钮回调函数
         // 处理按钮点击事件
         LV_LOG_USER("Image button clicked!");
         lv_obj_add_flag(base_1,LV_OBJ_FLAG_HIDDEN);
+        base_1_flag=0;//界面切换（主页面->修理人员面板）
+        base_3_flag=1;
         phone_act();
     }
+}
+lv_obj_t * timetable;
+static void back_btn_cb_4(lv_event_t * e)//设置界面返回
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    lv_obj_t * btn = lv_event_get_target(e);
+    //lv_obj_t * base_1_1=lv_obj_get_parent(img3);
+    
+    if(code == LV_EVENT_CLICKED) {
+        lv_obj_del(timetable);
+        lv_obj_clear_flag(base_1,LV_OBJ_FLAG_HIDDEN);
+        base_1_flag=1;//界面切换（电话面板->主界面）
+        base_4_flag=0;
+        //lv_obj_add_flag(slider,LV_OBJ_FLAG_HIDDEN);
+        lv_obj_del(btn);
+    }
+}
+
+// 列定义：左起第0列固定50px（节数标题），第1~7列均分剩余空间
+static lv_coord_t col_dsc[] = {
+    50,                      // 第0列：节数标题宽度
+    LV_GRID_FR(1),           // 第1列
+    LV_GRID_FR(1),           // 第2列
+    LV_GRID_FR(1),           // 第3列
+    LV_GRID_FR(1),           // 第4列
+    LV_GRID_FR(1),           // 第5列
+    LV_GRID_FR(1),           // 第6列
+    LV_GRID_FR(1),           // 第7列（共8列）
+    LV_GRID_TEMPLATE_LAST
+};
+
+// 行定义：第0行固定30px（星期标题），第1~5行均分剩余高度（课程色块）
+static lv_coord_t row_dsc[] = {
+    30,                      // 第0行：星期标题高度
+    LV_GRID_FR(1),           // 第1行
+    LV_GRID_FR(1),           // 第2行
+    LV_GRID_FR(1),           // 第3行
+    LV_GRID_FR(1),           // 第4行
+    LV_GRID_FR(1),           // 第5行（共6行）
+    LV_GRID_TEMPLATE_LAST
+};
+
+const char * courses[7][5] = {
+    {"Math", "CN", "PY", "Chem", "Ch"},
+    {"Ch", "CN","Chem" , "PY", "Math"},
+    {"Chem", "CN", "PY","Math" , "Ch"},
+    {"Chem", "CN", "Ch","Math" , "PY"},
+    {"Math", "CN", "Chem", "PY", "Ch"},
+    {"CN","Math" , "PY", "Ch", "Chem"},
+    {"Math", "CN", "PY", "Chem", "Ch"},
+
+};
+
+const lv_color_t colors[] = {
+    LV_COLOR_MAKE(0xFF,0x99,0x99), // 红色
+    LV_COLOR_MAKE(0x99,0xFF,0x99), // 绿色
+    LV_COLOR_MAKE(0x33,0x77,0x99),
+    // ... 其他颜色
+};
+
+void kb(void){
+    timetable = lv_obj_create(lv_scr_act());
+    lv_obj_set_size(timetable, 480,320); // 全屏
+    lv_obj_set_style_pad_all(timetable, 5, 0);            // 内边距
+    lv_obj_set_layout(timetable, LV_LAYOUT_GRID);
+    lv_obj_set_grid_dsc_array(timetable, col_dsc, row_dsc);
+
+    // 添加星期标题（第0行，第1~7列）
+    const char * weekdays[] = {"Mon", "Tues", "Wednes", "Thurs", "Fri", "Satur", "Sun"};
+    for (int col = 1; col <= 7; col++) {
+        lv_obj_t * label = lv_label_create(timetable);
+        lv_label_set_text(label, weekdays[col-1]);
+        lv_obj_set_grid_cell(label, 
+            LV_GRID_ALIGN_CENTER, col, 1, // 列：col列，跨1列
+            LV_GRID_ALIGN_CENTER, 0, 1    // 行：第0行，跨1行
+        );
+    }
+
+// 添加节数标题（第0列，第1~5行）
+    const char * classes[] = {"first\n08:25", "second\n10:25", "third\n14:30", "fourth\n16:30", "fifth\n19:10"};
+    for (int row = 1; row <=5; row++) {
+        lv_obj_t * label = lv_label_create(timetable);
+        lv_label_set_text(label, classes[row-1]);
+        lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP); // 自动换行
+        lv_obj_set_grid_cell(label,
+            LV_GRID_ALIGN_CENTER, 0, 1,  // 列：第0列
+            LV_GRID_ALIGN_CENTER, row, 1  // 行：row行
+        );
+    }
+
+
+
+    for (int day = 0; day < 7; day++) {
+        for (int cls = 0; cls <5; cls++) {
+            lv_obj_t * course_block = lv_obj_create(timetable);
+            lv_obj_set_style_bg_color(course_block, colors[cls%3], 0); // 交替颜色
+            lv_obj_set_style_radius(course_block, 5, 0);              // 圆角
+            lv_obj_set_style_pad_all(course_block, 5, 0);             // 内边距
+            
+            // 添加课程文字
+            lv_obj_t * label = lv_label_create(course_block);
+            lv_label_set_text_fmt(label, "%s\n", courses[day][cls]);
+            lv_obj_center(label);
+            
+            // 定位到对应网格单元（注意列从1开始）
+            lv_obj_set_grid_cell(course_block,
+                LV_GRID_ALIGN_STRETCH, day+1, 1, // 列：day+1（第1~7列）
+                LV_GRID_ALIGN_STRETCH, cls+1, 1  // 行：cls+1（第1~5行）
+            );
+        }
+    }
+
+    lv_obj_t * back_btn=lv_btn_create(lv_scr_act());
+    lv_obj_set_size(back_btn,40,30);
+    lv_obj_align_to(back_btn, lv_scr_act(), LV_ALIGN_TOP_LEFT, 0, 0);
+    lv_obj_add_event_cb(back_btn, back_btn_cb_4, LV_EVENT_ALL, NULL);
+
 }
 
 static void imgbtn_event_cb_3(lv_event_t * e)//课表按钮回调函数
@@ -243,9 +419,13 @@ static void imgbtn_event_cb_3(lv_event_t * e)//课表按钮回调函数
     if(code == LV_EVENT_CLICKED) {
         // 处理按钮点击事件
         LV_LOG_USER("Image button clicked!");
-        lv_obj_add_flag(imgbtn,LV_OBJ_FLAG_HIDDEN);
+        lv_obj_add_flag(base_1,LV_OBJ_FLAG_HIDDEN);
+        kb();
+        base_1_flag=0;//界面切换（主页面->课表人员面板）
+        base_4_flag=1;
     }
 }
+lv_obj_t * label_base_1_2;
 lv_obj_t * label_time;
 lv_obj_t * label_date;
 lv_obj_t * base_1_2;
@@ -358,7 +538,7 @@ void app_text(void)
     lv_style_set_line_width(&line_style, 5);
     lv_obj_add_style(line_1_1, &line_style, 0);
 
-    lv_obj_t * label_base_1_2 = lv_label_create(base_1); //创建天气显示标签
+    label_base_1_2 = lv_label_create(base_1); //创建天气显示标签
     char *weather="sunny";
     lv_label_set_text_fmt(label_base_1_2, "%s", weather);
     //lv_obj_set_size(label_base_1_2,210,0);

@@ -1,7 +1,7 @@
 {
     "version":            "1.1",
     "project_name":       "spi_lcd_touch",
-    "project_version":    "966bb57-dirty",
+    "project_version":    "235af5b-dirty",
     "project_path":       "D:/esp32-idf/esp-pro/MY_PRO/LCD/spi_lcd_touch(success)",
     "idf_path":           "D:/esp32-idf/v5.2.3/esp-idf",
     "build_dir":          "D:/esp32-idf/esp-pro/MY_PRO/LCD/spi_lcd_touch(success)/build",
