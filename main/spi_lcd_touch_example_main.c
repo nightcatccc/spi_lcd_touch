@@ -28,6 +28,7 @@
 #include "nvs_flash.h"
 #include "esp_event.h"
 #include "cJSON.h"
+#include "AS608.h"
 //#include "bsp_wifi_station.h"
 #include "esp_http_client.h"
 #include "esp_crt_bundle.h"
@@ -69,7 +70,7 @@ static const char *TAG = "example";
 #define EXAMPLE_PIN_NUM_LCD_CS         18
 #define EXAMPLE_PIN_NUM_BK_LIGHT       13
 //#define EXAMPLE_PIN_NUM_TOUCH_CS       15
-    
+
 #define EXAMPLE_PIN_NUM_TOUCH_SDA 12 // I2C数据引脚
 #define EXAMPLE_PIN_NUM_TOUCH_SCL 8 // I2C时钟引脚
 #define TOUCH_FT6336_RST 9 // 复位引脚（若无则设为-1）
@@ -373,7 +374,7 @@ void wifi_init_sta(void) {
     // 配置 Wi-Fi
     wifi_config_t wifi_config = {
         .sta = {
-            .ssid = "xiaomi13",
+            .ssid = "Xiaomi 13",
             .password = "cyy123123",
             .threshold.authmode = WIFI_AUTH_WPA2_PSK,      // 加密方式
             
@@ -410,7 +411,7 @@ void vTask_lvgl_app(void *pvParameters) {
         else if(timeinfo.tm_min<=10&&timeinfo.tm_hour<10)
         lv_label_set_text_fmt(label_time, "0%d : 0%d",timeinfo.tm_hour ,timeinfo.tm_min);//动态显示
         
-        lv_label_set_text_fmt(label_date, "日期 : %d 年 %d 月 %d 日",timeinfo.tm_year+1900,timeinfo.tm_mon,timeinfo.tm_mday);//动态显示
+        lv_label_set_text_fmt(label_date, "日期 : %d 年 %d 月 %d 日",timeinfo.tm_year+1900,timeinfo.tm_mon+1,timeinfo.tm_mday);//动态显示
         vTaskDelay(pdMS_TO_TICKS(1000));
     }
 
@@ -597,6 +598,8 @@ void app_main(void)
             vTaskDelay(100);
         }*/
         app_text();
+        USART_init();
+        
 /******************task_create********************** */
     TaskHandle_t xTaskHandle_lvgl_app = NULL;
     BaseType_t xReturn = xTaskCreate(

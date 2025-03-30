@@ -28,7 +28,15 @@
         "esp_lcd_panel_io.h": "c",
         "esp_lcd_panel_ops.h": "c",
         "cjson.h": "c",
-        "esp_crt_bundle.h": "c"
+        "esp_crt_bundle.h": "c",
+        "uart.h": "c",
+        "esp_log.h": "c",
+        "stdint.h": "c",
+        "as608.h": "c",
+        "gpio.h": "c",
+        "stdio.h": "c",
+        "task.h": "c",
+        "random": "c"
     },
     "idf.portWin": "COM12",
     "idf.customExtraVars": {

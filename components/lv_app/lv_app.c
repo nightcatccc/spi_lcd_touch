@@ -1,8 +1,11 @@
 #include <stdio.h>
+#include <string.h>
 #include "lv_app.h"
 #include "lwip/apps/sntp.h"
 #include "time.h"
-
+#include "AS608.h"
+uint8_t classsment[30]={0};
+int count_people;
 int8_t base_1_flag;//主界面标志位
 int8_t slider_flag;//设置按钮标志位
 int8_t base_3_flag;//修理人员面板标志位
@@ -425,6 +428,271 @@ static void imgbtn_event_cb_3(lv_event_t * e)//课表按钮回调函数
         base_4_flag=1;
     }
 }
+
+static void event_cb(lv_event_t * e)
+{
+    lv_obj_t * mbox = lv_event_get_current_target(e);
+    lv_event_code_t code = lv_event_get_code(e);
+    
+    // 只处理VALUE_CHANGED事件
+    if(code == LV_EVENT_VALUE_CHANGED) {
+        const char * active_btn_text = lv_msgbox_get_active_btn_text(mbox);
+        printf("收到点击\n");
+        if(active_btn_text) {
+            if(strcmp(active_btn_text, "reserve") == 0) {
+                printf("预定按钮被点击，执行预定操作\n");
+            }
+            lv_msgbox_close(mbox);
+        }
+    }
+
+}
+
+
+
+
+
+static void back_btn_cb_reservation(lv_event_t * e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+
+    if(code == LV_EVENT_CLICKED) {
+        // 静态变量确保只创建一个消息框
+        static lv_obj_t * mbox1 = NULL;
+        
+        // 如果消息框已经存在，则不再创建
+        if(mbox1 && lv_obj_is_valid(mbox1)) {
+            return;
+        }
+        
+        static const char * btns[] = {"reserve", "cancel", ""};
+        mbox1 = lv_msgbox_create(NULL, "RESERVATION", "Are you want to reserve this classroom?", btns, true);
+        lv_obj_add_event_cb(mbox1, event_cb, LV_EVENT_ALL, NULL);
+        lv_obj_center(mbox1);
+    }
+}
+
+lv_obj_t * arc;
+static void set_angle(void * obj, int32_t v)
+{
+    lv_arc_set_value(obj, v);
+}
+static void event_mbox_cb_add_success(lv_event_t * e)
+{
+    lv_obj_t * mbox = lv_event_get_current_target(e);
+    lv_event_code_t code = lv_event_get_code(e);
+    
+    // 只处理VALUE_CHANGED事件
+    if(code == LV_EVENT_VALUE_CHANGED) {
+        const char * active_btn_text = lv_msgbox_get_active_btn_text(mbox);
+        if(active_btn_text) {
+            if(strcmp(active_btn_text, "enter") == 0) {
+                printf("添加指纹成功\n");
+            }
+            lv_msgbox_close(mbox);
+        }
+    }
+}
+
+
+
+static void event_mbox_cb_add_fail(lv_event_t * e)
+{
+    lv_obj_t * mbox = lv_event_get_current_target(e);
+    lv_event_code_t code = lv_event_get_code(e);
+    
+    // 只处理VALUE_CHANGED事件
+    if(code == LV_EVENT_VALUE_CHANGED) {
+        const char * active_btn_text = lv_msgbox_get_active_btn_text(mbox);
+        if(active_btn_text) {
+            if(strcmp(active_btn_text, "enter") == 0) {
+                printf("添加指纹失败\n");
+            }
+            lv_msgbox_close(mbox);
+        }
+    }
+}
+
+static void event_mbox_cb_check_success(lv_event_t * e)
+{
+    lv_obj_t * mbox = lv_event_get_current_target(e);
+    lv_event_code_t code = lv_event_get_code(e);
+    
+    // 只处理VALUE_CHANGED事件
+    if(code == LV_EVENT_VALUE_CHANGED) {
+        const char * active_btn_text = lv_msgbox_get_active_btn_text(mbox);
+        if(active_btn_text) {
+            if(strcmp(active_btn_text, "enter") == 0) {
+                printf("搜索指纹成功\n");
+            }
+            lv_msgbox_close(mbox);
+            
+            lv_anim_t a;
+            lv_anim_init(&a);
+            lv_anim_set_var(&a, arc);
+            lv_anim_set_exec_cb(&a, set_angle);
+            lv_anim_set_time(&a, 1000);
+            lv_anim_set_repeat_count(&a, 0);    /*Just for the demo*/
+            lv_anim_set_repeat_delay(&a, 500);
+            lv_anim_set_values(&a, 0, (int)(count_people*100/30));
+            lv_anim_start(&a);
+        }
+    }
+}
+
+static void event_mbox_cb_check_rep(lv_event_t * e)
+{
+    lv_obj_t * mbox = lv_event_get_current_target(e);
+    lv_event_code_t code = lv_event_get_code(e);
+    
+    // 只处理VALUE_CHANGED事件
+    if(code == LV_EVENT_VALUE_CHANGED) {
+        const char * active_btn_text = lv_msgbox_get_active_btn_text(mbox);
+        if(active_btn_text) {
+            if(strcmp(active_btn_text, "enter") == 0) {
+                printf("重复打卡\n");
+            }
+            lv_msgbox_close(mbox);
+        }
+    }
+}
+
+
+
+static void event_mbox_cb_check_fail(lv_event_t * e)
+{
+    lv_obj_t * mbox = lv_event_get_current_target(e);
+    lv_event_code_t code = lv_event_get_code(e);
+    
+    // 只处理VALUE_CHANGED事件
+    if(code == LV_EVENT_VALUE_CHANGED) {
+        const char * active_btn_text = lv_msgbox_get_active_btn_text(mbox);
+        if(active_btn_text) {
+            if(strcmp(active_btn_text, "enter") == 0) {
+                printf("搜索指纹失败\n");
+            }
+            lv_msgbox_close(mbox);
+        }
+    }
+}
+
+
+static const char * btns_add_success[] = {"enter",  ""};
+
+static void imgbtn_zhiwen_cb(lv_event_t * e)//指纹按键回调
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    lv_obj_t * btn = lv_event_get_target(e);
+    if(code == LV_EVENT_SHORT_CLICKED) {
+        //xTaskCreate(check_task, "uart_event_task", 2048, NULL, 9, NULL);//创建任务句柄
+        if(add()==1) {printf("add success!!!!!!!!!\n");
+            static lv_obj_t * mbox_add_success = NULL;
+            
+            mbox_add_success = lv_msgbox_create(NULL, "ADD SUCCESS!", "you have completed this action", btns_add_success, false);
+            lv_obj_add_event_cb(mbox_add_success, event_mbox_cb_add_success, LV_EVENT_ALL, NULL);
+            lv_obj_center(mbox_add_success);
+        }
+        else{
+            static lv_obj_t * mbox_add_fail = NULL;
+            mbox_add_fail = lv_msgbox_create(NULL, "ADD FAIL!", "you have not completed this action", btns_add_success, false);
+            lv_obj_add_event_cb(mbox_add_fail, event_mbox_cb_add_fail, LV_EVENT_ALL, NULL);
+            lv_obj_center(mbox_add_fail);
+        }
+        vTaskDelay(500/portTICK_PERIOD_MS);
+        int k;
+        press_FR(&k);
+    }
+    else if(code == LV_EVENT_LONG_PRESSED) {
+        //xTaskCreate(add_task, "uart_event_task", 2048, NULL, 9, NULL);//创建任务句柄
+            int k;
+            if(press_FR(&k)==1) {
+                if(classsment[k-1]==1){
+                    static lv_obj_t * mbox_check_rep = NULL;
+                    mbox_check_rep = lv_msgbox_create(NULL,"CHECK REP!", "You're clocking in repeatedly.", btns_add_success, false);
+                    lv_obj_add_event_cb(mbox_check_rep, event_mbox_cb_check_rep, LV_EVENT_ALL, NULL);
+                    lv_obj_center(mbox_check_rep);
+                }
+                else{
+                    static lv_obj_t * mbox_check_success = NULL;
+                    mbox_check_success = lv_msgbox_create(NULL,"CHECK SUCCESS!", "you have completed this action", btns_add_success, false);
+                    lv_obj_add_event_cb(mbox_check_success, event_mbox_cb_check_success, LV_EVENT_ALL, NULL);
+                    lv_obj_center(mbox_check_success);
+                    count_people++;
+                }
+                classsment[k-1]=1;
+            }
+            else{
+                static lv_obj_t * mbox_check_fail = NULL;
+                mbox_check_fail = lv_msgbox_create(NULL,"CHECK FAIL!", "you have not completed this action", btns_add_success, false);
+                lv_obj_add_event_cb(mbox_check_fail, event_mbox_cb_check_fail, LV_EVENT_ALL, NULL);
+                lv_obj_center(mbox_check_fail);
+            }
+    }
+    
+}
+
+lv_obj_t * base_5;
+
+static void back_btn_cb_5(lv_event_t * e)//设置界面返回
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    lv_obj_t * btn = lv_event_get_target(e);
+    //lv_obj_t * base_1_1=lv_obj_get_parent(img3);
+    
+    if(code == LV_EVENT_CLICKED) {
+        lv_obj_del(base_5);
+        lv_obj_clear_flag(base_1,LV_OBJ_FLAG_HIDDEN);
+        base_1_flag=1;//界面切换（电话面板->主界面）
+        base_4_flag=0;
+        //lv_obj_add_flag(slider,LV_OBJ_FLAG_HIDDEN);
+        lv_obj_del(btn);
+    }
+}
+
+
+void daka(void){
+    static lv_style_t style_base_5; //为背景板创建一个样式
+    lv_style_init(&style_base_5); 
+    lv_style_set_bg_color(&style_base_5, lv_color_hex(0xFFFFFF)); //背景板为黑色
+
+    base_5 = lv_obj_create(lv_scr_act()); //打卡界面主板
+    lv_obj_set_size(base_5,480,320);
+    lv_obj_add_style(base_5, &style_base_5, LV_STATE_DEFAULT); 
+    
+    lv_obj_t * imgbtn_zhiwen = lv_imgbtn_create(base_5); 
+    lv_imgbtn_set_src(imgbtn_zhiwen,LV_IMGBTN_STATE_RELEASED,NULL,&zhiwen,NULL);
+    lv_obj_set_size(imgbtn_zhiwen,200,200);
+    lv_obj_set_pos(imgbtn_zhiwen,20,50);
+    lv_obj_add_event_cb(imgbtn_zhiwen, imgbtn_zhiwen_cb, LV_EVENT_ALL, NULL);
+
+    arc = lv_arc_create(base_5);
+    lv_arc_set_rotation(arc, 90);
+    lv_arc_set_bg_angles(arc, 0, 360);
+    lv_obj_set_pos(arc,280,90);
+    lv_obj_remove_style(arc, NULL, LV_PART_KNOB);   /*Be sure the knob is not displayed*/
+    lv_obj_clear_flag(arc, LV_OBJ_FLAG_CLICKABLE);  /*To not allow adjusting by click*/
+    lv_obj_set_style_arc_color(arc, lv_color_hex(0x87ceeb), LV_PART_MAIN); 
+    lv_arc_set_value(arc, 0);
+    //lv_obj_center(arc);
+
+
+    lv_obj_t * back_btn=lv_btn_create(lv_scr_act());
+    lv_obj_set_size(back_btn,40,30);
+    lv_obj_align_to(back_btn, lv_scr_act(), LV_ALIGN_BOTTOM_RIGHT, 0, 0);
+    lv_obj_add_event_cb(back_btn, back_btn_cb_5, LV_EVENT_ALL, NULL);
+}
+
+static void btn_daka_event_cb(lv_event_t * e)//打卡按键
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    lv_obj_t * btn = lv_event_get_target(e);
+    if(code == LV_EVENT_CLICKED) {
+        lv_obj_add_flag(base_1,LV_OBJ_FLAG_HIDDEN);
+        daka();
+    }
+}
+
+
 lv_obj_t * label_base_1_2;
 lv_obj_t * label_time;
 lv_obj_t * label_date;
@@ -444,6 +712,7 @@ void app_text(void)
     LV_IMG_DECLARE(wifi_on);
     LV_IMG_DECLARE(wifi_off);
     LV_IMG_DECLARE(people);
+    LV_IMG_DECLARE(zhiwen);
     //LV_FONT_DECLARE(LV_FONT_MONTSERRAT_30);
 
     static lv_style_t style_base_1; //为背景板创建一个样式
@@ -512,19 +781,23 @@ void app_text(void)
     lv_style_set_shadow_spread(&style_shadow_1_1, 5);//边框
     lv_style_set_shadow_color(&style_shadow_1_1, lv_color_hex(0x333333));
 
-    lv_obj_t * base_1_1=lv_obj_create(base_1);
-    lv_obj_set_size(base_1_1,260,120);
-    lv_obj_set_pos(base_1_1,20,160);
-    lv_obj_add_style(base_1_1, &style_base_1_1, LV_STATE_DEFAULT); 
-    lv_obj_set_style_bg_opa(base_1_1, LV_OPA_80, LV_PART_MAIN);//透明度80
-    lv_obj_add_style(base_1_1, &style_shadow_1_1, 0);
+    lv_obj_t * btn_daka=lv_obj_create(base_1);
+    lv_obj_set_size(btn_daka,260,120);
+    lv_obj_set_pos(btn_daka,20,160);
+    lv_obj_add_style(btn_daka, &style_base_1_1, LV_STATE_DEFAULT); 
+    lv_obj_set_style_bg_opa(btn_daka, LV_OPA_80, LV_PART_MAIN);//透明度80
+    lv_obj_add_style(btn_daka, &style_shadow_1_1, 0);
+    lv_obj_add_event_cb(btn_daka, btn_daka_event_cb, LV_EVENT_ALL, NULL);
 
-    lv_obj_t * label_base_1_1 = lv_label_create(base_1_1); //设置当前课程详情显示标签
+    lv_obj_t * label_base_1_1 = lv_label_create(btn_daka); //设置当前课程详情显示标签
     char *teacher="MR.JON";
     char *course="MATH";
     char *class="NO.11";
     lv_label_set_text_fmt(label_base_1_1, "COURSE : %s\n\nCLASS : %s\n\nTEACHER : %s", course,class,teacher);
     lv_obj_set_style_text_color(label_base_1_1, lv_color_hex(0x000000), LV_PART_MAIN);
+
+
+
     
     lv_obj_t * line_1_1=lv_line_create(base_1);
     static lv_point_t line_points[] = {
@@ -544,6 +817,17 @@ void app_text(void)
     //lv_obj_set_size(label_base_1_2,210,0);
     lv_obj_align(label_base_1_2, LV_ALIGN_OUT_TOP_MID, 0, 0);
     lv_obj_set_style_text_color(label_base_1_2, lv_color_hex(0x0000ff), LV_PART_MAIN);
+
+    lv_obj_t * btn_reservation = lv_btn_create(base_1);
+    lv_obj_set_size(btn_reservation,80,20);
+    lv_obj_align_to(btn_reservation, base_1, LV_ALIGN_TOP_RIGHT, 0, 0);
+    lv_obj_add_event_cb(btn_reservation, back_btn_cb_reservation, LV_EVENT_ALL, NULL);
+
+    lv_obj_t * label_revervation = lv_label_create(base_1);
+    lv_label_set_text_fmt(label_revervation, "RESER");
+    lv_obj_align_to(label_revervation, btn_reservation, LV_ALIGN_TOP_RIGHT, -5, -5);
+    
+    
  /*************************************************************************************************/
     static lv_style_t style_bg;
     static lv_style_t style_indic;
