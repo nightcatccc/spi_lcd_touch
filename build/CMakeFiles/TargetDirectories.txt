@@ -667,13 +667,6 @@ D:/esp32-idf/esp-pro/MY_PRO/LCD/spi_lcd_touch(success)/build/esp-idf/AS608/CMake
 D:/esp32-idf/esp-pro/MY_PRO/LCD/spi_lcd_touch(success)/build/esp-idf/AS608/CMakeFiles/install.dir
 D:/esp32-idf/esp-pro/MY_PRO/LCD/spi_lcd_touch(success)/build/esp-idf/AS608/CMakeFiles/install/local.dir
 D:/esp32-idf/esp-pro/MY_PRO/LCD/spi_lcd_touch(success)/build/esp-idf/AS608/CMakeFiles/install/strip.dir
-D:/esp32-idf/esp-pro/MY_PRO/LCD/spi_lcd_touch(success)/build/esp-idf/lv_app/CMakeFiles/__idf_lv_app.dir
-D:/esp32-idf/esp-pro/MY_PRO/LCD/spi_lcd_touch(success)/build/esp-idf/lv_app/CMakeFiles/edit_cache.dir
-D:/esp32-idf/esp-pro/MY_PRO/LCD/spi_lcd_touch(success)/build/esp-idf/lv_app/CMakeFiles/rebuild_cache.dir
-D:/esp32-idf/esp-pro/MY_PRO/LCD/spi_lcd_touch(success)/build/esp-idf/lv_app/CMakeFiles/list_install_components.dir
-D:/esp32-idf/esp-pro/MY_PRO/LCD/spi_lcd_touch(success)/build/esp-idf/lv_app/CMakeFiles/install.dir
-D:/esp32-idf/esp-pro/MY_PRO/LCD/spi_lcd_touch(success)/build/esp-idf/lv_app/CMakeFiles/install/local.dir
-D:/esp32-idf/esp-pro/MY_PRO/LCD/spi_lcd_touch(success)/build/esp-idf/lv_app/CMakeFiles/install/strip.dir
 D:/esp32-idf/esp-pro/MY_PRO/LCD/spi_lcd_touch(success)/build/esp-idf/cJSON/CMakeFiles/__idf_cJSON.dir
 D:/esp32-idf/esp-pro/MY_PRO/LCD/spi_lcd_touch(success)/build/esp-idf/cJSON/CMakeFiles/edit_cache.dir
 D:/esp32-idf/esp-pro/MY_PRO/LCD/spi_lcd_touch(success)/build/esp-idf/cJSON/CMakeFiles/rebuild_cache.dir
@@ -681,6 +674,13 @@ D:/esp32-idf/esp-pro/MY_PRO/LCD/spi_lcd_touch(success)/build/esp-idf/cJSON/CMake
 D:/esp32-idf/esp-pro/MY_PRO/LCD/spi_lcd_touch(success)/build/esp-idf/cJSON/CMakeFiles/install.dir
 D:/esp32-idf/esp-pro/MY_PRO/LCD/spi_lcd_touch(success)/build/esp-idf/cJSON/CMakeFiles/install/local.dir
 D:/esp32-idf/esp-pro/MY_PRO/LCD/spi_lcd_touch(success)/build/esp-idf/cJSON/CMakeFiles/install/strip.dir
+D:/esp32-idf/esp-pro/MY_PRO/LCD/spi_lcd_touch(success)/build/esp-idf/lv_app/CMakeFiles/__idf_lv_app.dir
+D:/esp32-idf/esp-pro/MY_PRO/LCD/spi_lcd_touch(success)/build/esp-idf/lv_app/CMakeFiles/edit_cache.dir
+D:/esp32-idf/esp-pro/MY_PRO/LCD/spi_lcd_touch(success)/build/esp-idf/lv_app/CMakeFiles/rebuild_cache.dir
+D:/esp32-idf/esp-pro/MY_PRO/LCD/spi_lcd_touch(success)/build/esp-idf/lv_app/CMakeFiles/list_install_components.dir
+D:/esp32-idf/esp-pro/MY_PRO/LCD/spi_lcd_touch(success)/build/esp-idf/lv_app/CMakeFiles/install.dir
+D:/esp32-idf/esp-pro/MY_PRO/LCD/spi_lcd_touch(success)/build/esp-idf/lv_app/CMakeFiles/install/local.dir
+D:/esp32-idf/esp-pro/MY_PRO/LCD/spi_lcd_touch(success)/build/esp-idf/lv_app/CMakeFiles/install/strip.dir
 D:/esp32-idf/esp-pro/MY_PRO/LCD/spi_lcd_touch(success)/build/esp-idf/espressif__cmake_utilities/CMakeFiles/edit_cache.dir
 D:/esp32-idf/esp-pro/MY_PRO/LCD/spi_lcd_touch(success)/build/esp-idf/espressif__cmake_utilities/CMakeFiles/rebuild_cache.dir
 D:/esp32-idf/esp-pro/MY_PRO/LCD/spi_lcd_touch(success)/build/esp-idf/espressif__cmake_utilities/CMakeFiles/list_install_components.dir

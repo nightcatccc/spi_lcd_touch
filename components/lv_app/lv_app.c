@@ -4,6 +4,36 @@
 #include "lwip/apps/sntp.h"
 #include "time.h"
 #include "AS608.h"
+#include "esp_wifi.h"
+#include "esp_log.h"
+#include "cJSON.h"
+#include "esp_http_client.h"
+#include "esp_https_ota.h" // 包含 URL 编码函数
+#include <ctype.h>
+
+// 符合RFC 3986的URL编码实现
+char* esp_url_encode(const char* str) {
+    const char hex[] = "0123456789ABCDEF";
+    size_t len = strlen(str);
+    char *encoded = malloc(3 * len + 1); // 最大可能长度
+    size_t pos = 0;
+
+    for (size_t i = 0; i < len; i++) {
+        unsigned char c = str[i];
+        if (isalnum(c) || c == '-' || c == '_' || c == '.' || c == '~') {
+            encoded[pos++] = c;
+        } else {
+            encoded[pos++] = '%';
+            encoded[pos++] = hex[c >> 4];
+            encoded[pos++] = hex[c & 0x0F];
+        }
+    }
+    encoded[pos] = '\0';
+    return encoded;
+}
+
+// 使用示例
+
 uint8_t classsment[30]={0};
 int count_people;
 int8_t base_1_flag;//主界面标志位
@@ -513,6 +543,66 @@ static void event_mbox_cb_add_fail(lv_event_t * e)
     }
 }
 
+static const char * TAG_put_rate="HTTP_PUT_RATE";
+esp_err_t http_event_handler(esp_http_client_event_t *evt) {
+    if(evt->event_id==HTTP_EVENT_ON_DATA){
+        ESP_LOGI(TAG_put_rate, "收到数据，长度: %d", evt->data_len);
+            
+            // 打印数据（如果是文本）
+            printf("%.*s\n", evt->data_len, (char *)evt->data);
+    }
+            
+            
+
+        // ... 其他事件处理 ...
+    
+    return ESP_OK;
+}
+
+// 动态生成当前日期
+const char* get_current_date() {
+    time_t now = time(NULL);
+    struct tm *tm_info = gmtime(&now);
+    static char buffer[32];
+    strftime(buffer, sizeof(buffer), "%a, %d %b %Y %H:%M:%S GMT", tm_info);
+    return buffer;
+}
+
+
+void put_rate(int rate) {
+    esp_http_client_config_t config;
+    memset(&config, 0, sizeof(config));
+    char *encoded_dis = esp_url_encode("库尔勒校区");
+    char *encoded_class = esp_url_encode("24教学6班");
+    // 动态生成URL参数（注意：中文需要URL编码处理）
+    char url[256];
+    snprintf(url, sizeof(url), 
+           "http://115.29.241.234:8080/update-attendance-rate?"
+           "classSchoolDistrict=%s&classCompose=%s&"
+           "courseNumber=000000B0A01&attendanceRate=0.6",encoded_dis,encoded_class);
+    config.url = url;
+    config.event_handler = http_event_handler;
+
+    esp_http_client_handle_t client = esp_http_client_init(&config);
+    esp_http_client_set_method(client, HTTP_METHOD_PUT);
+
+    // 移除Content-Type头（无请求体）
+    esp_http_client_set_header(client, "Accept", "application/json");
+    esp_http_client_set_header(client, "Connection", "close");
+
+    esp_err_t err = esp_http_client_perform(client);
+    if (err == ESP_OK) {
+        ESP_LOGI(TAG_put_rate, "状态码 = %d", 
+                esp_http_client_get_status_code(client));
+    } else {
+        ESP_LOGE(TAG_put_rate, "失败: %s", esp_err_to_name(err));
+    }
+    esp_http_client_cleanup(client);
+    free(encoded_dis); // 必须手动释放
+    free(encoded_class); // 必须手动释放
+}
+
+
 static void event_mbox_cb_check_success(lv_event_t * e)
 {
     lv_obj_t * mbox = lv_event_get_current_target(e);
@@ -527,7 +617,7 @@ static void event_mbox_cb_check_success(lv_event_t * e)
             }
             lv_msgbox_close(mbox);
             
-            lv_anim_t a;
+            lv_anim_t a;//饼状图更新动画
             lv_anim_init(&a);
             lv_anim_set_var(&a, arc);
             lv_anim_set_exec_cb(&a, set_angle);
@@ -536,6 +626,8 @@ static void event_mbox_cb_check_success(lv_event_t * e)
             lv_anim_set_repeat_delay(&a, 500);
             lv_anim_set_values(&a, 0, (int)(count_people*100/30));
             lv_anim_start(&a);
+
+            put_rate((int)(count_people*100/30));
         }
     }
 }
