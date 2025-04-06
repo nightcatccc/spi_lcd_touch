@@ -2,6 +2,7 @@
 #include <string.h>
 #include "lv_app.h"
 #include "lwip/apps/sntp.h"
+#include "driver/gpio.h"
 #include "time.h"
 #include "AS608.h"
 #include "esp_wifi.h"
@@ -10,6 +11,47 @@
 #include "esp_http_client.h"
 #include "esp_https_ota.h" // 包含 URL 编码函数
 #include <ctype.h>
+
+uint8_t classsment[30]={0};
+int count_people;
+int8_t base_1_flag;//主界面标志位
+int8_t slider_flag;//设置按钮标志位
+int8_t base_3_flag;//修理人员面板标志位
+int8_t base_4_flag;//修理人员面板标志位
+
+int8_t light_flag;//灯光标志位
+int8_t light_status;//灯光设备情况
+int8_t kongtiao_flag;//空调标志位位
+int8_t kongtiao_status;//空调设备情况
+int8_t touying_flag;//投影仪标志位
+int8_t touying_status;//投影仪设备情况
+
+lv_obj_t * base_1;//创建背景板(主页)
+
+lv_obj_t * slider;//（设置页）
+
+extern struct tm timeinfo;
+
+static const char * TAG_put_rate="HTTP_PUT_RATE";
+esp_err_t http_event_handler(esp_http_client_event_t *evt) {
+    if(evt->event_id==HTTP_EVENT_ON_DATA){
+        ESP_LOGI(TAG_put_rate, "收到数据，长度: %d", evt->data_len);
+            // 打印数据（如果是文本）
+            printf("%.*s\n", evt->data_len, (char *)evt->data);
+    }
+        // ... 其他事件处理 ...
+     //   gpio_set_level();
+    return ESP_OK;
+}
+
+
+const char* get_current_date() {
+    time_t now = time(NULL);
+    struct tm *tm_info = gmtime(&now);
+    static char buffer[32];
+    strftime(buffer, sizeof(buffer), "%a, %d %b %Y %H:%M:%S GMT", tm_info);
+    return buffer;
+}
 
 // 符合RFC 3986的URL编码实现
 char* esp_url_encode(const char* str) {
@@ -34,60 +76,264 @@ char* esp_url_encode(const char* str) {
 
 // 使用示例
 
-uint8_t classsment[30]={0};
-int count_people;
-int8_t base_1_flag;//主界面标志位
-int8_t slider_flag;//设置按钮标志位
-int8_t base_3_flag;//修理人员面板标志位
-int8_t base_4_flag;//修理人员面板标志位
+void put_light_status(void) {
+    esp_http_client_config_t config;
+    memset(&config, 0, sizeof(config));
+    
+    char *encoded_name = esp_url_encode("CJ1-汽修车间");
+    char *encoded_lamp = esp_url_encode("开启");
+    if(light_status==0){
+        if(light_flag==1){encoded_lamp = esp_url_encode("开启");}
+        else if(light_flag==0){encoded_lamp = esp_url_encode("关闭");}
+    }
+    else if(light_status==1){
+        encoded_lamp = esp_url_encode("缺失");
+    }
+    else if(light_status==2){
+        encoded_lamp = esp_url_encode("损坏");
+    }
+    
+    // 动态生成URL参数（注意：中文需要URL编码处理）
+    char url[256];
+    snprintf(url, sizeof(url), 
+           "http://115.29.241.234:8080/update-lamp?"
+           "classroomName=%s&"
+           "lamp=%s",encoded_name,encoded_lamp);
+    config.url = url;
+    config.event_handler = http_event_handler;
 
-int8_t light_flag;//灯光标志位
-int8_t kongtiao_flag;//空调标志位位
-int8_t touying_flag;//投影仪标志位
+    esp_http_client_handle_t client = esp_http_client_init(&config);
+    esp_http_client_set_method(client, HTTP_METHOD_PUT);
 
-lv_obj_t * base_1;//创建背景板(主页)
+    // 移除Content-Type头（无请求体）
+    esp_http_client_set_header(client, "Accept", "application/json");
+    esp_http_client_set_header(client, "Connection", "close");
 
-lv_obj_t * slider;//（设置页）
+    esp_err_t err = esp_http_client_perform(client);
+    if (err == ESP_OK) {
+        ESP_LOGI(TAG_put_rate, "状态码 = %d", 
+                esp_http_client_get_status_code(client));
+    } else {
+        ESP_LOGE(TAG_put_rate, "失败: %s", esp_err_to_name(err));
+    }
+    esp_http_client_cleanup(client);
+    free(encoded_name); // 必须手动释放
+    free(encoded_lamp); // 必须手动释放
+}
 
-extern struct tm timeinfo;
+void put_kongtiao_status(void) {
+    esp_http_client_config_t config;
+    memset(&config, 0, sizeof(config));
+    
+    char *encoded_name = esp_url_encode("CJ1-汽修车间");
+    char *encoded_kongtiao = esp_url_encode("开启");
+    if(kongtiao_status==0){
+        if(kongtiao_flag==1){encoded_kongtiao = esp_url_encode("开启");}
+        else if(kongtiao_flag==0){encoded_kongtiao = esp_url_encode("关闭");}
+    }
+    else if(kongtiao_status==1){
+        encoded_kongtiao = esp_url_encode("缺失");
+    }
+    else if(kongtiao_status==2){
+        encoded_kongtiao = esp_url_encode("损坏");
+    }
+    
+    // 动态生成URL参数（注意：中文需要URL编码处理）
+    char url[256];
+    snprintf(url, sizeof(url), 
+           "http://115.29.241.234:8080/update-air-conditioning?"
+           "classroomName=%s&"
+           "airConditioning=%s",encoded_name,encoded_kongtiao);
+    config.url = url;
+    config.event_handler = http_event_handler;
+
+    esp_http_client_handle_t client = esp_http_client_init(&config);
+    esp_http_client_set_method(client, HTTP_METHOD_PUT);
+
+    // 移除Content-Type头（无请求体）
+    esp_http_client_set_header(client, "Accept", "application/json");
+    esp_http_client_set_header(client, "Connection", "close");
+
+    esp_err_t err = esp_http_client_perform(client);
+    if (err == ESP_OK) {
+        ESP_LOGI(TAG_put_rate, "状态码 = %d", 
+                esp_http_client_get_status_code(client));
+    } else {
+        ESP_LOGE(TAG_put_rate, "失败: %s", esp_err_to_name(err));
+    }
+    esp_http_client_cleanup(client);
+    free(encoded_name); // 必须手动释放
+    free(encoded_kongtiao); // 必须手动释放
+}
+
+void put_touying_status(void) {
+    esp_http_client_config_t config;
+    memset(&config, 0, sizeof(config));
+    
+    char *encoded_name = esp_url_encode("CJ1-汽修车间");
+    char *encoded_touying = esp_url_encode("开启");
+    if(touying_status==0){
+        if(touying_flag==1){encoded_touying = esp_url_encode("开启");}
+        else if(touying_flag==0){encoded_touying = esp_url_encode("关闭");}
+    }
+    else if(touying_status==1){
+        encoded_touying = esp_url_encode("缺失");
+    }
+    else if(touying_status==2){
+        encoded_touying = esp_url_encode("损坏");
+    }
+    
+    // 动态生成URL参数（注意：中文需要URL编码处理）
+    char url[256];
+    snprintf(url, sizeof(url), 
+           "http://115.29.241.234:8080/update-projector?"
+           "classroomName=%s&"
+           "projector=%s",encoded_name,encoded_touying);
+    config.url = url;
+    config.event_handler = http_event_handler;
+
+    esp_http_client_handle_t client = esp_http_client_init(&config);
+    esp_http_client_set_method(client, HTTP_METHOD_PUT);
+
+    // 移除Content-Type头（无请求体）
+    esp_http_client_set_header(client, "Accept", "application/json");
+    esp_http_client_set_header(client, "Connection", "close");
+
+    esp_err_t err = esp_http_client_perform(client);
+    if (err == ESP_OK) {
+        ESP_LOGI(TAG_put_rate, "状态码 = %d", 
+                esp_http_client_get_status_code(client));
+    } else {
+        ESP_LOGE(TAG_put_rate, "失败: %s", esp_err_to_name(err));
+    }
+    esp_http_client_cleanup(client);
+    free(encoded_name); // 必须手动释放
+    free(encoded_touying); // 必须手动释放
+}
+
 
 bool count_img_1=true;
-static void imgbtn1_cb(lv_event_t * e)//设置按钮回调函数
+
+static void mbox_led_event_cb(lv_event_t * e)
+{
+    lv_obj_t * mbox = lv_event_get_current_target(e);
+    lv_event_code_t code = lv_event_get_code(e);
+    
+    // 只处理VALUE_CHANGED事件
+    if(code == LV_EVENT_VALUE_CHANGED) {
+        const char * active_btn_text = lv_msgbox_get_active_btn_text(mbox);
+        
+        if(active_btn_text) {
+            if(strcmp(active_btn_text, "Normal") == 0) {
+                printf("正常运行\n");
+                light_status=0;
+            }
+            else if(strcmp(active_btn_text, "Abnormal") == 0){
+                printf("异常运行\n");
+                light_status=1;
+            }
+            else if(strcmp(active_btn_text, "lack") == 0){
+                printf("设备缺失\n");
+                light_status=2;
+            }
+            put_light_status();
+            lv_msgbox_close(mbox);
+        }
+    }
+
+}
+
+
+static void imgbtn1_cb(lv_event_t * e)//灯光设置
 {
     lv_event_code_t code = lv_event_get_code(e);
     lv_obj_t * img1 = lv_event_get_target(e);
     lv_obj_t * base_1_1=lv_obj_get_parent(img1);
     
-    if(code == LV_EVENT_CLICKED) {
+    if(code == LV_EVENT_SHORT_CLICKED) {
         if(count_img_1==false) count_img_1=true;
         else count_img_1=false;
         /*if(count_img_1==false)
             lv_img_set_src(img1, &light_off);
         else
             lv_img_set_src(img1, &light_on);*/
-        if(light_flag==0){
-            lv_img_set_src(img1, &light_on);
-            light_flag=1;
+        if(light_status==0){
+            printf("灯光正常\n");
+            if(light_flag==0){
+                lv_img_set_src(img1, &light_on);
+                light_flag=1;
+                gpio_set_level(GPIO_NUM_3, 1);
+                gpio_set_level(GPIO_NUM_4, 1);
+                gpio_set_level(GPIO_NUM_5, 1);
+                printf("灯光打开");
+            }
+            else{
+                lv_img_set_src(img1, &light_off);
+                light_flag=0;
+                gpio_set_level(GPIO_NUM_3, 0);
+                gpio_set_level(GPIO_NUM_4, 0);
+                gpio_set_level(GPIO_NUM_5, 0);
+                printf("灯光关闭");
+            }
         }
-        else{
-            lv_img_set_src(img1, &light_off);
-            light_flag=0;
+        else if(light_status==1){
+            printf("灯光异常\n");
+            lv_img_set_src(img1, &bad);
+        }
+        else if(light_status==2){
+            printf("灯光设备缺失\n");
+            lv_img_set_src(img1, &lose);
         }
     }
-//    else if(code==LV_EVENT_LONG_PRESSED)
-//    {
-//        lv_obj_add_flag(base_1,LV_OBJ_FLAG_HIDDEN);
-//    }
+    else if(code==LV_EVENT_LONG_PRESSED)
+    {
+        static lv_obj_t * mbox_led = NULL;
+        printf("设置页面\n");
+        static const char * btns[] = {"Normal", "Abnormal","lack", ""};
+        mbox_led = lv_msgbox_create(NULL, "OPERATION", "Are you want to change devices' status?", btns, true);
+        //lv_obj_set_size(mbox_led,320,240);
+        lv_obj_add_event_cb(mbox_led, mbox_led_event_cb, LV_EVENT_ALL, NULL);
+        lv_obj_center(mbox_led);
+    }
+}
+
+static void mbox_kongtiao_event_cb(lv_event_t * e)
+{
+    lv_obj_t * mbox = lv_event_get_current_target(e);
+    lv_event_code_t code = lv_event_get_code(e);
+    
+    // 只处理VALUE_CHANGED事件
+    if(code == LV_EVENT_VALUE_CHANGED) {
+        const char * active_btn_text = lv_msgbox_get_active_btn_text(mbox);
+        
+        if(active_btn_text) {
+            if(strcmp(active_btn_text, "Normal") == 0) {
+                printf("正常运行\n");
+                kongtiao_status=0;
+            }
+            else if(strcmp(active_btn_text, "Abnormal") == 0){
+                printf("异常运行\n");
+                kongtiao_status=1;
+            }
+            else if(strcmp(active_btn_text, "lack") == 0){
+                printf("设备缺失\n");
+                kongtiao_status=2;
+            }
+            put_kongtiao_status();
+            lv_msgbox_close(mbox);
+        }
+    }
+
 }
 
 bool count_img_2=true;
-static void imgbtn2_cb(lv_event_t * e)//设置按钮回调函数
+static void imgbtn2_cb(lv_event_t * e)//空调设置
 {
     lv_event_code_t code = lv_event_get_code(e);
     lv_obj_t * img2 = lv_event_get_target(e);
     lv_obj_t * base_1_1=lv_obj_get_parent(img2);
     
-    if(code == LV_EVENT_CLICKED) {
+    if(code == LV_EVENT_SHORT_CLICKED) {
         //lv_obj_add_flag(base_1,LV_OBJ_FLAG_HIDDEN);
         if(count_img_2==false) count_img_2=true;
         else count_img_2=false;
@@ -95,25 +341,76 @@ static void imgbtn2_cb(lv_event_t * e)//设置按钮回调函数
             lv_img_set_src(img2, &kt_off);
         else
             lv_img_set_src(img2, &kt_on);*/
-        if(kongtiao_flag==0){
-            lv_img_set_src(img2, &kt_on);
-            kongtiao_flag=1;
+        if(kongtiao_status==0){
+            if(kongtiao_flag==0){
+                lv_img_set_src(img2, &kt_on);
+                kongtiao_flag=1;
+                gpio_set_level(GPIO_NUM_6, 1);
+                printf("空调已打开");
+            }
+            else{
+                lv_img_set_src(img2, &kt_off);
+                kongtiao_flag=0;
+                gpio_set_level(GPIO_NUM_6, 0);
+                printf("空调已关闭");
+            }
         }
-        else{
-            lv_img_set_src(img2, &kt_off);
-            kongtiao_flag=0;
+        else if(kongtiao_status==1){
+            lv_img_set_src(img2, &bad);
         }
+        else if(kongtiao_status==2){
+            lv_img_set_src(img2, &lose);
+        }
+    }
+    else if(code==LV_EVENT_LONG_PRESSED)
+    {
+        static lv_obj_t * mbox_led = NULL;
+        printf("设置页面\n");
+        static const char * btns[] = {"Normal", "Abnormal","lack", ""};
+        mbox_led = lv_msgbox_create(NULL, "OPERATION", "Are you want to change devices' status?", btns, true);
+        lv_obj_add_event_cb(mbox_led, mbox_kongtiao_event_cb, LV_EVENT_ALL, NULL);
+        lv_obj_center(mbox_led);
     }
 }
 
+static void mbox_touying_event_cb(lv_event_t * e)
+{
+    lv_obj_t * mbox = lv_event_get_current_target(e);
+    lv_event_code_t code = lv_event_get_code(e);
+    
+    // 只处理VALUE_CHANGED事件
+    if(code == LV_EVENT_VALUE_CHANGED) {
+        const char * active_btn_text = lv_msgbox_get_active_btn_text(mbox);
+        
+        if(active_btn_text) {
+            if(strcmp(active_btn_text, "Normal") == 0) {
+                printf("正常运行\n");
+                touying_status=0;
+            }
+            else if(strcmp(active_btn_text, "Abnormal") == 0){
+                printf("异常运行\n");
+                touying_status=1;
+            }
+            else if(strcmp(active_btn_text, "lack") == 0){
+                printf("设备缺失\n");
+                touying_status=2;
+            }
+            lv_msgbox_close(mbox);
+        }
+    }
+
+}
+
+
+
 bool count_img_3=true;
-static void imgbtn3_cb(lv_event_t * e)//设置按钮回调函数
+static void imgbtn3_cb(lv_event_t * e)//投影仪设置
 {
     lv_event_code_t code = lv_event_get_code(e);
     lv_obj_t * img3 = lv_event_get_target(e);
     lv_obj_t * base_1_1=lv_obj_get_parent(img3);
     
-    if(code == LV_EVENT_CLICKED) {
+    if(code == LV_EVENT_SHORT_CLICKED) {
         //lv_obj_add_flag(base_1,LV_OBJ_FLAG_HIDDEN);
         if(count_img_3==false) count_img_3=true;
         else count_img_3=false;
@@ -122,14 +419,35 @@ static void imgbtn3_cb(lv_event_t * e)//设置按钮回调函数
         else
             lv_img_set_src(img3, &bg_on);
             */
-        if(touying_flag==0){
-            lv_img_set_src(img3, &bg_on);
-            touying_flag=1;
+        if(touying_status==0){
+            if(touying_flag==0){
+                lv_img_set_src(img3, &bg_on);
+                touying_flag=1;
+                gpio_set_level(GPIO_NUM_20, 1);
+                printf("投影仪已开启");
+            }
+            else{
+                lv_img_set_src(img3, &bg_off);
+                touying_flag=0;
+                gpio_set_level(GPIO_NUM_20, 0);
+                printf("投影仪已关闭");
+            }
         }
-        else{
-            lv_img_set_src(img3, &bg_off);
-            touying_flag=0;
+        else if(touying_status==1){
+            lv_img_set_src(img3, &bad);
         }
+        else if(touying_status==2){
+            lv_img_set_src(img3, &lose);
+        }
+    }
+    else if(code==LV_EVENT_LONG_PRESSED)
+    {
+        static lv_obj_t * mbox_led = NULL;
+        printf("设置页面\n");
+        static const char * btns[] = {"Normal", "Abnormal","lack", ""};
+        mbox_led = lv_msgbox_create(NULL, "OPERATION", "Are you want to change devices' status?", btns, true);
+        lv_obj_add_event_cb(mbox_led, mbox_touying_event_cb, LV_EVENT_ALL, NULL);
+        lv_obj_center(mbox_led);
     }
 }
 
@@ -216,6 +534,7 @@ static void imgbtn_event_cb_1(lv_event_t * e)//设置按钮回调函数
         lv_obj_add_flag(base_1,LV_OBJ_FLAG_HIDDEN);
         base_1_flag=0;//界面切换（主界面->设置面板）
         slider_flag=1;
+        
         setting_act();
     }
 }
@@ -543,30 +862,9 @@ static void event_mbox_cb_add_fail(lv_event_t * e)
     }
 }
 
-static const char * TAG_put_rate="HTTP_PUT_RATE";
-esp_err_t http_event_handler(esp_http_client_event_t *evt) {
-    if(evt->event_id==HTTP_EVENT_ON_DATA){
-        ESP_LOGI(TAG_put_rate, "收到数据，长度: %d", evt->data_len);
-            
-            // 打印数据（如果是文本）
-            printf("%.*s\n", evt->data_len, (char *)evt->data);
-    }
-            
-            
-
-        // ... 其他事件处理 ...
-    
-    return ESP_OK;
-}
 
 // 动态生成当前日期
-const char* get_current_date() {
-    time_t now = time(NULL);
-    struct tm *tm_info = gmtime(&now);
-    static char buffer[32];
-    strftime(buffer, sizeof(buffer), "%a, %d %b %Y %H:%M:%S GMT", tm_info);
-    return buffer;
-}
+
 
 
 void put_rate(int rate) {
@@ -576,10 +874,11 @@ void put_rate(int rate) {
     char *encoded_class = esp_url_encode("24教学6班");
     // 动态生成URL参数（注意：中文需要URL编码处理）
     char url[256];
+    printf("%.2f\n",(float)rate/100);
     snprintf(url, sizeof(url), 
            "http://115.29.241.234:8080/update-attendance-rate?"
            "classSchoolDistrict=%s&classCompose=%s&"
-           "courseNumber=000000B0A01&attendanceRate=0.6",encoded_dis,encoded_class);
+           "courseNumber=000000B0A01&attendanceRate=0.03",encoded_dis,encoded_class);//,(float)rate/100
     config.url = url;
     config.event_handler = http_event_handler;
 
@@ -601,7 +900,7 @@ void put_rate(int rate) {
     free(encoded_dis); // 必须手动释放
     free(encoded_class); // 必须手动释放
 }
-
+lv_obj_t * label_class_rate;
 
 static void event_mbox_cb_check_success(lv_event_t * e)
 {
@@ -621,13 +920,14 @@ static void event_mbox_cb_check_success(lv_event_t * e)
             lv_anim_init(&a);
             lv_anim_set_var(&a, arc);
             lv_anim_set_exec_cb(&a, set_angle);
-            lv_anim_set_time(&a, 1000);
+            lv_anim_set_time(&a, 500);
             lv_anim_set_repeat_count(&a, 0);    /*Just for the demo*/
-            lv_anim_set_repeat_delay(&a, 500);
+            lv_anim_set_repeat_delay(&a, 200);
             lv_anim_set_values(&a, 0, (int)(count_people*100/30));
             lv_anim_start(&a);
-
+            lv_label_set_text_fmt(label_class_rate, "%d/30",count_people);//动态显示
             put_rate((int)(count_people*100/30));
+            
         }
     }
 }
@@ -679,7 +979,7 @@ static void imgbtn_zhiwen_cb(lv_event_t * e)//指纹按键回调
         //xTaskCreate(check_task, "uart_event_task", 2048, NULL, 9, NULL);//创建任务句柄
         if(add()==1) {printf("add success!!!!!!!!!\n");
             static lv_obj_t * mbox_add_success = NULL;
-            
+
             mbox_add_success = lv_msgbox_create(NULL, "ADD SUCCESS!", "you have completed this action", btns_add_success, false);
             lv_obj_add_event_cb(mbox_add_success, event_mbox_cb_add_success, LV_EVENT_ALL, NULL);
             lv_obj_center(mbox_add_success);
@@ -691,8 +991,6 @@ static void imgbtn_zhiwen_cb(lv_event_t * e)//指纹按键回调
             lv_obj_center(mbox_add_fail);
         }
         vTaskDelay(500/portTICK_PERIOD_MS);
-        int k;
-        press_FR(&k);
     }
     else if(code == LV_EVENT_LONG_PRESSED) {
         //xTaskCreate(add_task, "uart_event_task", 2048, NULL, 9, NULL);//创建任务句柄
@@ -700,13 +998,16 @@ static void imgbtn_zhiwen_cb(lv_event_t * e)//指纹按键回调
             if(press_FR(&k)==1) {
                 if(classsment[k-1]==1){
                     static lv_obj_t * mbox_check_rep = NULL;
+
                     mbox_check_rep = lv_msgbox_create(NULL,"CHECK REP!", "You're clocking in repeatedly.", btns_add_success, false);
                     lv_obj_add_event_cb(mbox_check_rep, event_mbox_cb_check_rep, LV_EVENT_ALL, NULL);
                     lv_obj_center(mbox_check_rep);
                 }
                 else{
                     static lv_obj_t * mbox_check_success = NULL;
-                    mbox_check_success = lv_msgbox_create(NULL,"CHECK SUCCESS!", "you have completed this action", btns_add_success, false);
+                    char str[256];
+                    snprintf(str, sizeof(str), "Your ID is 1234567_%d",k);//,(float)rate/100
+                    mbox_check_success = lv_msgbox_create(NULL,"CHECK SUCCESS!", str, btns_add_success, false);
                     lv_obj_add_event_cb(mbox_check_success, event_mbox_cb_check_success, LV_EVENT_ALL, NULL);
                     lv_obj_center(mbox_check_success);
                     count_people++;
@@ -746,7 +1047,7 @@ void daka(void){
     static lv_style_t style_base_5; //为背景板创建一个样式
     lv_style_init(&style_base_5); 
     lv_style_set_bg_color(&style_base_5, lv_color_hex(0xFFFFFF)); //背景板为黑色
-
+    
     base_5 = lv_obj_create(lv_scr_act()); //打卡界面主板
     lv_obj_set_size(base_5,480,320);
     lv_obj_add_style(base_5, &style_base_5, LV_STATE_DEFAULT); 
@@ -765,6 +1066,11 @@ void daka(void){
     lv_obj_clear_flag(arc, LV_OBJ_FLAG_CLICKABLE);  /*To not allow adjusting by click*/
     lv_obj_set_style_arc_color(arc, lv_color_hex(0x87ceeb), LV_PART_MAIN); 
     lv_arc_set_value(arc, 0);
+
+    label_class_rate = lv_label_create(base_5);
+    lv_obj_set_pos(label_class_rate,330,145);
+    lv_label_set_text_fmt(label_class_rate, "0/30");//动态显示
+
     //lv_obj_center(arc);
 
 
@@ -805,6 +1111,8 @@ void app_text(void)
     LV_IMG_DECLARE(wifi_off);
     LV_IMG_DECLARE(people);
     LV_IMG_DECLARE(zhiwen);
+    LV_IMG_DECLARE(bad);
+    LV_IMG_DECLARE(lose);
     //LV_FONT_DECLARE(LV_FONT_MONTSERRAT_30);
 
     static lv_style_t style_base_1; //为背景板创建一个样式

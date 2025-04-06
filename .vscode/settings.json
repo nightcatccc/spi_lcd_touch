@@ -41,7 +41,7 @@
         "esp_http_client.h": "c",
         "esp_https_ota.h": "c"
     },
-    "idf.portWin": "COM12",
+    "idf.portWin": "COM27",
     "idf.customExtraVars": {
         "IDF_TARGET": "esp32s3"
     },

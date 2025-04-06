@@ -102,6 +102,25 @@ static void uart_event_task(void *arg)
 
 void USART_init(void)
 {
+
+	gpio_config_t io_conf = {
+		.intr_type = GPIO_INTR_DISABLE, // 禁用中断
+		.mode = GPIO_MODE_OUTPUT, // 设置为输出模式
+		.pin_bit_mask = (1 << GPIO_NUM_3) | (1 << GPIO_NUM_4) | (1 << GPIO_NUM_5) | (1 << GPIO_NUM_6) | (1 << GPIO_NUM_20), // 配置 GPIO3
+		.pull_down_en = 0, // 禁用下拉电阻
+		.pull_up_en = 0, // 禁用上拉电阻
+		};
+	gpio_config(&io_conf); // 应用配置
+	
+	gpio_config_t io_conf_2 = {
+		.intr_type = GPIO_INTR_DISABLE, // 禁用中断
+		.mode = GPIO_MODE_INPUT, // 设置为输出模式
+		.pin_bit_mask = (1 << GPIO_NUM_21) , // 配置 GPIO3
+		.pull_down_en = 0, // 禁用下拉电阻
+		.pull_up_en = 0, // 禁用上拉电阻
+		};
+	gpio_config(&io_conf_2); // 应用配置
+
     uart_config_t uart_config = {
         .baud_rate = 57600,
         .data_bits = UART_DATA_8_BITS,
@@ -811,7 +830,7 @@ int add(void){//录入指纹
 			case 4:	
 		  		ID++;
 				ensure=PS_StoreChar(CharBuffer2,ID);//储存模板
-				if(ensure==0x00) 
+				if(ensure==0x00&&gpio_get_level(GPIO_NUM_21)==1) 
 				{			
 					ESP_LOGE(TAG_add,"录入成功");
 					uint16_t ValidN;
@@ -843,7 +862,7 @@ int press_FR(int *k)
         ESP_LOGE(TAG_add,"请刷指纹");
         i++;
         ensure=PS_GetImage();
-        if(ensure==0x00)//获取图像成功 
+        if(ensure==0x00&&gpio_get_level(GPIO_NUM_21)==1)//获取图像成功 
         {	
             ensure=PS_GenChar(CharBuffer1);
             if(ensure==0x00) //生成特征成功
@@ -851,7 +870,7 @@ int press_FR(int *k)
                 ensure=PS_Search(CharBuffer1,0,300,&seach);
                 if(ensure==0x00)//搜索成功
                 {	
-                    if(seach.mathscore>100)
+                    if(seach.mathscore>80)
                         {
                             ESP_LOGE(TAG_add,"配对成功！指纹ID：%d",seach.pageID);
                             *k=seach.pageID;

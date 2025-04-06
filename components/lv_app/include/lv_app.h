@@ -20,8 +20,8 @@ extern const lv_img_dsc_t bg_on;
 extern const lv_img_dsc_t bg_off;
 extern const lv_img_dsc_t people;
 extern const lv_img_dsc_t zhiwen;
-//extern const lv_img_dsc_t wifi_on;
-//extern const lv_img_dsc_t wifi_off;
+extern const lv_img_dsc_t bad;
+extern const lv_img_dsc_t lose;
 
 void app_text(void);
 #endif
