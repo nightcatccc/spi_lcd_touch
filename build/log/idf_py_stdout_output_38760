@@ -13,7 +13,7 @@ NOTICE: [9/9] idf (5.2.3)
 -- Project sdkconfig file D:/esp32-idf/esp-pro/MY_PRO/LCD/spi_lcd_touch(success)/sdkconfig
 Loading defaults file D:/esp32-idf/esp-pro/MY_PRO/LCD/spi_lcd_touch(success)/sdkconfig.defaults...
 -- Compiler supported targets: xtensa-esp-elf
--- App "spi_lcd_touch" version: d7c7fd3-dirty
+-- App "spi_lcd_touch" version: fae2d5b-dirty
 -- Adding linker script D:/esp32-idf/esp-pro/MY_PRO/LCD/spi_lcd_touch(success)/build/esp-idf/esp_system/ld/memory.ld
 -- Adding linker script D:/esp32-idf/esp-pro/MY_PRO/LCD/spi_lcd_touch(success)/build/esp-idf/esp_system/ld/sections.ld.in
 -- Adding linker script D:/esp32-idf/v5.2.3/esp-idf/components/esp_rom/esp32s3/ld/esp32s3.rom.ld

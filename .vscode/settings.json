@@ -39,9 +39,10 @@
         "random": "c",
         "esp_event.h": "c",
         "esp_http_client.h": "c",
-        "esp_https_ota.h": "c"
+        "esp_https_ota.h": "c",
+        "sstream": "c"
     },
-    "idf.portWin": "COM27",
+    "idf.portWin": "COM28",
     "idf.customExtraVars": {
         "IDF_TARGET": "esp32s3"
     },

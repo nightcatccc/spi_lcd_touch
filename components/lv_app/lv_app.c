@@ -10,6 +10,7 @@
 #include "cJSON.h"
 #include "esp_http_client.h"
 #include "esp_https_ota.h" // 包含 URL 编码函数
+#include "driver/uart.h"
 #include <ctype.h>
 
 uint8_t classsment[30]={0};
@@ -423,13 +424,13 @@ static void imgbtn3_cb(lv_event_t * e)//投影仪设置
             if(touying_flag==0){
                 lv_img_set_src(img3, &bg_on);
                 touying_flag=1;
-                gpio_set_level(GPIO_NUM_20, 1);
+                gpio_set_level(GPIO_NUM_2, 1);
                 printf("投影仪已开启");
             }
             else{
                 lv_img_set_src(img3, &bg_off);
                 touying_flag=0;
-                gpio_set_level(GPIO_NUM_20, 0);
+                gpio_set_level(GPIO_NUM_2, 0);
                 printf("投影仪已关闭");
             }
         }
@@ -687,13 +688,13 @@ static lv_coord_t row_dsc[] = {
 };
 
 const char * courses[7][5] = {
-    {"Math", "CN", "PY", "Chem", "Ch"},
-    {"Ch", "CN","Chem" , "PY", "Math"},
-    {"Chem", "CN", "PY","Math" , "Ch"},
-    {"Chem", "CN", "Ch","Math" , "PY"},
-    {"Math", "CN", "Chem", "PY", "Ch"},
-    {"CN","Math" , "PY", "Ch", "Chem"},
-    {"Math", "CN", "PY", "Chem", "Ch"},
+    {"Math", "", "", "", ""},
+    {"", "CN","Chem" , "", ""},
+    {"", "", "","Math" , ""},
+    {"Chem", "CN", "Ch","" , "PY"},
+    {"Math", "", "", "", ""},
+    {"","" , "PY", "", ""},
+    {"", "", "", "", ""},
 
 };
 
@@ -745,9 +746,13 @@ void kb(void){
             
             // 添加课程文字
             lv_obj_t * label = lv_label_create(course_block);
+
             lv_label_set_text_fmt(label, "%s\n", courses[day][cls]);
             lv_obj_center(label);
-            
+            if(strcmp(courses[day][cls], "") == 0)
+                lv_obj_add_flag(course_block,LV_OBJ_FLAG_HIDDEN);
+            else
+                lv_obj_clear_flag(course_block,LV_OBJ_FLAG_HIDDEN);
             // 定位到对应网格单元（注意列从1开始）
             lv_obj_set_grid_cell(course_block,
                 LV_GRID_ALIGN_STRETCH, day+1, 1, // 列：day+1（第1~7列）

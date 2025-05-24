@@ -2,4 +2,32 @@
 
 {"version": 2, "values": {}, "ranges": {}, "visible": {}}
 
+Set VFS_SUPPORT_TERMIOS
+{"version": 2, "values": {"VFS_SUPPORT_TERMIOS": false}, "ranges": {}, "visible": {}}
+
+Set VFS_SUPPORT_TERMIOS
+{"version": 2, "values": {"VFS_SUPPORT_TERMIOS": true}, "ranges": {}, "visible": {}}
+
+Set LV_FONT_MONTSERRAT_38
+{"version": 2, "values": {"LV_FONT_MONTSERRAT_38": true}, "ranges": {}, "visible": {}}
+
+Set LV_FONT_MONTSERRAT_36
+{"version": 2, "values": {"LV_FONT_MONTSERRAT_36": true}, "ranges": {}, "visible": {}}
+
+Set LV_FONT_MONTSERRAT_38
+{"version": 2, "values": {"LV_FONT_MONTSERRAT_38": false}, "ranges": {}, "visible": {}}
+
+Set LV_FONT_MONTSERRAT_36
+{"version": 2, "values": {"LV_FONT_MONTSERRAT_36": false}, "ranges": {}, "visible": {}}
+
+Set LV_FONT_MONTSERRAT_36
+{"version": 2, "values": {"LV_FONT_MONTSERRAT_36": true}, "ranges": {}, "visible": {}}
+
+Set LV_FONT_MONTSERRAT_36
+{"version": 2, "values": {"LV_FONT_MONTSERRAT_36": false}, "ranges": {}, "visible": {}}
+
+{"version": 2, "values": {}, "ranges": {}, "visible": {}}
+
+{"version": 2, "values": {}, "ranges": {}, "visible": {}}
+
 --kconfig D:/esp32-idf/v5.2.3/esp-idf/Kconfig --sdkconfig-rename D:/esp32-idf/v5.2.3/esp-idf/sdkconfig.rename --config D:/esp32-idf/esp-pro/MY_PRO/LCD/spi_lcd_touch(success)/sdkconfig"
