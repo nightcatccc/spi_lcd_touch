@@ -532,11 +532,18 @@ static void imgbtn_event_cb_1(lv_event_t * e)//设置按钮回调函数
     if(code == LV_EVENT_CLICKED) {
         // 处理按钮点击事件
         LV_LOG_USER("Image button clicked!");
-        lv_obj_add_flag(base_1,LV_OBJ_FLAG_HIDDEN);
-        base_1_flag=0;//界面切换（主界面->设置面板）
-        slider_flag=1;
+//        lv_obj_add_flag(base_1,LV_OBJ_FLAG_HIDDEN);
+//        base_1_flag=0;//界面切换（主界面->设置面板）
+//        slider_flag=1;
         
-        setting_act();
+//        setting_act();
+        uint8_t data=0x01;
+        uart_write_bytes(UART_NUM_2, &data,sizeof(data));
+
+
+
+
+
     }
 }
 
@@ -640,10 +647,12 @@ static void imgbtn_event_cb_2(lv_event_t * e)//电话按钮回调函数
     if(code == LV_EVENT_CLICKED) {
         // 处理按钮点击事件
         LV_LOG_USER("Image button clicked!");
-        lv_obj_add_flag(base_1,LV_OBJ_FLAG_HIDDEN);
-        base_1_flag=0;//界面切换（主页面->修理人员面板）
-        base_3_flag=1;
-        phone_act();
+//        lv_obj_add_flag(base_1,LV_OBJ_FLAG_HIDDEN);
+//        base_1_flag=0;//界面切换（主页面->修理人员面板）
+//        base_3_flag=1;
+//        phone_act();
+        uint8_t data=0x02;
+        uart_write_bytes(UART_NUM_2, &data,sizeof(data));
     }
 }
 lv_obj_t * timetable;
@@ -660,6 +669,9 @@ static void back_btn_cb_4(lv_event_t * e)//设置界面返回
         base_4_flag=0;
         //lv_obj_add_flag(slider,LV_OBJ_FLAG_HIDDEN);
         lv_obj_del(btn);
+
+
+        
     }
 }
 
@@ -776,10 +788,13 @@ static void imgbtn_event_cb_3(lv_event_t * e)//课表按钮回调函数
     if(code == LV_EVENT_CLICKED) {
         // 处理按钮点击事件
         LV_LOG_USER("Image button clicked!");
-        lv_obj_add_flag(base_1,LV_OBJ_FLAG_HIDDEN);
-        kb();
-        base_1_flag=0;//界面切换（主页面->课表人员面板）
-        base_4_flag=1;
+//        lv_obj_add_flag(base_1,LV_OBJ_FLAG_HIDDEN);
+//       kb();
+//        base_1_flag=0;//界面切换（主页面->课表人员面板）
+//        base_4_flag=1;
+
+        uint8_t data=0x03;
+        uart_write_bytes(UART_NUM_2, &data,sizeof(data));
     }
 }
 
@@ -1118,6 +1133,9 @@ void app_text(void)
     LV_IMG_DECLARE(zhiwen);
     LV_IMG_DECLARE(bad);
     LV_IMG_DECLARE(lose);
+    LV_IMG_DECLARE(NUM1);
+    LV_IMG_DECLARE(NUM2);
+    LV_IMG_DECLARE(NUM3);
     //LV_FONT_DECLARE(LV_FONT_MONTSERRAT_30);
 
     static lv_style_t style_base_1; //为背景板创建一个样式
@@ -1157,20 +1175,20 @@ void app_text(void)
     
 
     lv_obj_t * imgbtn_1 = lv_imgbtn_create(base_1);//创建设置按钮
-    lv_obj_set_size(imgbtn_1, 60, 60);  // 设置按钮大小
-    lv_imgbtn_set_src(imgbtn_1,LV_IMGBTN_STATE_RELEASED,NULL,&setting,NULL);
+    lv_obj_set_size(imgbtn_1, 50, 50);  // 设置按钮大小
+    lv_imgbtn_set_src(imgbtn_1,LV_IMGBTN_STATE_RELEASED,NULL,&NUM1,NULL);
     lv_obj_align(imgbtn_1,LV_ALIGN_CENTER,180,-90);
     lv_obj_add_event_cb(imgbtn_1, imgbtn_event_cb_1, LV_EVENT_ALL, NULL);//设置回调函数
 
     lv_obj_t * imgbtn_2 = lv_imgbtn_create(base_1);//创建电话按钮
-    lv_obj_set_size(imgbtn_2, 60, 60);  // 设置按钮大小
-    lv_imgbtn_set_src(imgbtn_2,LV_IMGBTN_STATE_RELEASED,NULL,&call,NULL);
+    lv_obj_set_size(imgbtn_2, 50, 50);  // 设置按钮大小
+    lv_imgbtn_set_src(imgbtn_2,LV_IMGBTN_STATE_RELEASED,NULL,&NUM2,NULL);
     lv_obj_align(imgbtn_2,LV_ALIGN_CENTER,180,0);
     lv_obj_add_event_cb(imgbtn_2, imgbtn_event_cb_2, LV_EVENT_ALL, NULL);
 
     lv_obj_t * imgbtn_3 = lv_imgbtn_create(base_1);//创建课表按钮
-    lv_obj_set_size(imgbtn_3, 60, 60);  // 设置按钮大小
-    lv_imgbtn_set_src(imgbtn_3,LV_IMGBTN_STATE_RELEASED,NULL,&timing,NULL);
+    lv_obj_set_size(imgbtn_3, 50, 50);  // 设置按钮大小
+    lv_imgbtn_set_src(imgbtn_3,LV_IMGBTN_STATE_RELEASED,NULL,&NUM3,NULL);
     lv_obj_align(imgbtn_3,LV_ALIGN_CENTER,180,90);
     lv_obj_add_event_cb(imgbtn_3, imgbtn_event_cb_3, LV_EVENT_ALL, NULL);
 
@@ -1195,11 +1213,14 @@ void app_text(void)
     lv_obj_add_event_cb(btn_daka, btn_daka_event_cb, LV_EVENT_ALL, NULL);
 
     lv_obj_t * label_base_1_1 = lv_label_create(btn_daka); //设置当前课程详情显示标签
-    char *teacher="MR.JON";
-    char *course="MATH";
-    char *class="NO.11";
-    lv_label_set_text_fmt(label_base_1_1, "COURSE : %s\n\nCLASS : %s\n\nTEACHER : %s", course,class,teacher);
-    lv_obj_set_style_text_color(label_base_1_1, lv_color_hex(0x000000), LV_PART_MAIN);
+    lv_label_set_text_fmt(label_base_1_1, "team:计算机八号\nproject: H\n");
+    static lv_style_t label_style_3; 
+    lv_style_init(&label_style_3);
+    lv_style_set_text_font(&label_style_3,&lv_font_simsun_16_cjk);
+    lv_obj_set_style_text_color(label_base_1_1, lv_color_hex(0x000000), LV_PART_MAIN); 
+    lv_obj_add_style(label_base_1_1, &label_style_3, 0);
+
+   // lv_label_set_text_fmt(label_base_1_1, "COURSE : %s\n\nCLASS : %s\n\nTEACHER : %s", course,class,teacher);
 
 
 

@@ -40,7 +40,11 @@
         "esp_event.h": "c",
         "esp_http_client.h": "c",
         "esp_https_ota.h": "c",
-        "sstream": "c"
+        "sstream": "c",
+        "array": "c",
+        "string": "c",
+        "string_view": "c",
+        "span": "c"
     },
     "idf.portWin": "COM28",
     "idf.customExtraVars": {

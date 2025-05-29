@@ -590,15 +590,15 @@ void app_main(void)
  //        example_lvgl_demo_ui(disp);
  //       lv_demo_music();
         lv_disp_set_rotation(disp, 1);
-
+        USART_init();
         wifi_init_sta();
-        
+        gpio_set_level(GPIO_NUM_48, 1);
      /*   while(1){
             esp_wait_sntp_sync();
             vTaskDelay(100);
         }*/
         app_text();
-        USART_init();
+        
         
 /******************task_create********************** */
     TaskHandle_t xTaskHandle_lvgl_app = NULL;

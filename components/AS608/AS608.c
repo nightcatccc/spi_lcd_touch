@@ -106,7 +106,7 @@ void USART_init(void)
 	gpio_config_t io_conf = {
 		.intr_type = GPIO_INTR_DISABLE, // 禁用中断
 		.mode = GPIO_MODE_OUTPUT, // 设置为输出模式
-		.pin_bit_mask = (1 << GPIO_NUM_3) | (1 << GPIO_NUM_4) | (1 << GPIO_NUM_5) | (1 << GPIO_NUM_6) | (1 << GPIO_NUM_2), // 配置 GPIO3
+		.pin_bit_mask = (1 << GPIO_NUM_3) | (1 << GPIO_NUM_4) | (1 << GPIO_NUM_5) | (1 << GPIO_NUM_6) | (1 << GPIO_NUM_2) | (1 << GPIO_NUM_48), // 配置 GPIO3
 		.pull_down_en = 0, // 禁用下拉电阻
 		.pull_up_en = 0, // 禁用上拉电阻
 		};
@@ -114,7 +114,7 @@ void USART_init(void)
 	
 	gpio_config_t io_conf_2 = {
 		.intr_type = GPIO_INTR_DISABLE, // 禁用中断
-		.mode = GPIO_MODE_INPUT, // 设置为输出模式
+		.mode = GPIO_MODE_INPUT, // 设置为输入模式
 		.pin_bit_mask = (1 << GPIO_NUM_21) , // 配置 GPIO3
 		.pull_down_en = 0, // 禁用下拉电阻
 		.pull_up_en = 0, // 禁用上拉电阻
@@ -122,7 +122,7 @@ void USART_init(void)
 	gpio_config(&io_conf_2); // 应用配置
 
     uart_config_t uart_config = {
-        .baud_rate = 57600,
+        .baud_rate = 115200,
         .data_bits = UART_DATA_8_BITS,
         .parity    = UART_PARITY_DISABLE,
         .stop_bits = UART_STOP_BITS_1,
